@@ -1,6 +1,6 @@
 name: torus-election-gui
 title: Torus Election GUI
-version: "1.0.0"
+version: "1.0.3"
 summary: Visualize leader election in a two-dimensional torus network.
 description: |
   Torus Election GUI is a Java Swing desktop application for visualizing
@@ -10,15 +10,15 @@ description: |
 base: core24
 grade: stable
 confinement: strict
-license: Proprietary
+license: MIT
 icon: assets/icons/torus-election-gui.png
 
-wbsite:
-  - httpes://example.com/torus-election-gui
+website:
+  - https://neimat1.github.io/TorusElectionGUI/
 source-code:
-  - https://example.com/torus-election-gui/source
+  - https://github.com/neimat1/TorusElectionGUI
 issues:
-  - https://example.com/torus-election-gui/issues
+  - https://github.com/neimat1/TorusElectionGUI/issues
 contact:
   - neimat.soliman.ismail@gmail.com
 
@@ -47,6 +47,6 @@ parts:
     override-build: |
       mvn -DskipTests package
       mkdir -p "$CRAFT_PART_INSTALL/jar" "$CRAFT_PART_INSTALL/bin"
-      cp target/torus-election-gui-1.0.0.jar "$CRAFT_PART_INSTALL/jar/"
+      cp "target/torus-election-gui-${CRAFT_PROJECT_VERSION}.jar" "$CRAFT_PART_INSTALL/jar/app.jar"
       cp snap/local/torus-election-gui "$CRAFT_PART_INSTALL/bin/"
       chmod 755 "$CRAFT_PART_INSTALL/bin/torus-election-gui"

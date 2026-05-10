@@ -80,7 +80,7 @@
 <p>For a grid of <code>n = rows * cols</code>:</p>
 <ul>
 <li>network construction is <code>O(n)</code></li>
-<li>each round processes four directed neighbor exchanges per node, so one round is <code>O(4n)</code>, effectively <code>O(n)</code></li>
+<li>each round processes up to four unique neighbor reads per node, so one round is <code>O(4n)</code>, effectively <code>O(n)</code></li>
 <li>memory for topology is <code>O(n)</code></li>
 <li>memory for animation is <code>O(steps)</code>, where <code>steps</code> is the number of recorded message exchanges</li>
 </ul>
@@ -117,8 +117,8 @@
 <pre><code class="language-bash">
 mvn test
 </code></pre>
-<p>Result: 19 tests run, 0 failures, 0 errors. JaCoCo report generated.</p>
+<p>Result: 21 tests run, 0 failures, 0 errors. JaCoCo report generated.</p>
 </article></main>
-<footer class="footer"><span>Last updated May 11, 2026.</span><span>Powered by Neimat Soliman + Codex.</span></footer>
+<footer class="footer"><span>Last updated May 11, 2026.</span></footer>
 </body>
 </html>

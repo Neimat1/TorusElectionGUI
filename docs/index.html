@@ -131,7 +131,7 @@
                                     <span>Status:</span><strong>Completed</strong>
                                     <span>Leader ID:</span><strong>55</strong>
                                     <span>Leader Position:</span><strong>(2,2)</strong>
-                                    <span>Rounds:</span><strong>4</strong>
+                                    <span>Rounds Checked:</span><strong>4</strong>
                                     <span>Messages Exchanged:</span><strong>256</strong>
                                     <span>Start Time:</span><strong>10:24:12</strong>
                                     <span>End Time:</span><strong>10:24:18</strong>
@@ -155,15 +155,15 @@
                             <h3>Execution Log</h3>
                             <div class="prototype-log">
                                 [10:24:12] New animated election run.<br>
-                                [Round 1] P33 -&gt; P8 sends max=33 UPDATED<br>
-                                [Round 2] P55 -&gt; P31 sends max=55 UPDATED<br>
+                                [Round 1] P8 reads max=33 from P33 UPDATED<br>
+                                [Round 2] P31 reads max=55 from P55 UPDATED<br>
                                 [10:24:18] Animation completed successfully.
                             </div>
                         </div>
                     </div>
                 </div>
                 <p class="note">
-                    The red arrow marker represents one animation phase: the highlighted sender passes its current maximum-known ID to the highlighted receiver.
+                    The red arrow marker represents one animation phase: the highlighted receiver reads the highlighted neighbor's current maximum-known ID.
                 </p>
             </section>
 
@@ -182,7 +182,7 @@ java -cp target/classes Main</code></pre>
                     <div class="command">
                         <h3>Run Jar</h3>
                         <pre><code>mvn package
-java -jar target/torus-election-gui-1.0.0.jar</code></pre>
+java -jar target/torus-election-gui-1.0.3.jar</code></pre>
                     </div>
                 </div>
             </section>
@@ -193,7 +193,7 @@ java -jar target/torus-election-gui-1.0.0.jar</code></pre>
                     <div class="command">
                         <h3>Ubuntu .deb</h3>
                         <pre><code>mvn clean package -Plinux-installer
-sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb</code></pre>
+sudo apt install ./target/installer/torus-election-gui_1.0.3-1_amd64.deb</code></pre>
                     </div>
                     <div class="command">
                         <h3>Windows .exe</h3>
@@ -221,10 +221,6 @@ snapcraft</code></pre>
                     <article class="card">
                         <h3>Snap</h3>
                         <p><code>~/snap/torus-election-gui/current/.local/share/torus-election-gui/logs/torus-election-gui.log</code></p>
-                    </article>
-                    <article class="card">
-                        <h3>Codex</h3>
-                        <p><a href="CODEX_LOG.html">Documentation and setup work log</a></p>
                     </article>
                 </div>
             </section>
@@ -256,10 +252,6 @@ snapcraft</code></pre>
                         <strong>Performance</strong>
                         <span>Performance, SOLID, and memory notes.</span>
                     </a>
-                    <a class="doc-link" href="CODEX_LOG.html">
-                        <strong>Codex Log</strong>
-                        <span>Documentation and repository setup work completed with Codex assistance.</span>
-                    </a>
                 </div>
             </section>
         </div>
@@ -267,7 +259,6 @@ snapcraft</code></pre>
 
     <footer class="footer">
         <span>Last updated May 11, 2026. Built for GitHub Pages from the repository docs folder.</span>
-        <span>Powered by Neimat Soliman + Codex.</span>
     </footer>
 </div>
 </body>

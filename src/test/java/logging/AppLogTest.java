@@ -11,17 +11,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppLogTest {
     @TempDir
-    Path userHome;
+    Path tempDir;
 
     @Test
-    void appendsTextToResolvedLogFile() throws Exception {
-        System.setProperty("user.home", userHome.toString());
+    void appendsTextToProvidedLogFile() throws Exception {
+        Path logDirectory = tempDir.resolve("logs");
+        Path logFile = logDirectory.resolve("torus-election-gui.log");
 
-        AppLog.append("first\n");
-        AppLog.append("second\n");
+        AppLog.append(logDirectory, "first\n");
+        AppLog.append(logDirectory, "second\n");
 
-        assertTrue(Files.exists(AppLog.getLogDirectory()));
-        assertTrue(Files.exists(AppLog.getLogFile()));
-        assertEquals("first\nsecond\n", Files.readString(AppLog.getLogFile()));
+        assertTrue(Files.exists(logDirectory));
+        assertTrue(Files.exists(logFile));
+        assertEquals("first\nsecond\n", Files.readString(logFile));
     }
 }

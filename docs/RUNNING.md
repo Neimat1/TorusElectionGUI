@@ -45,7 +45,7 @@ mvn package
 Run it:
 
 ```bash
-java -jar target/torus-election-gui-1.0.0.jar
+java -jar target/torus-election-gui-1.0.3.jar
 ```
 
 ## Native Installers
