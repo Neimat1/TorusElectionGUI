@@ -31,6 +31,8 @@
 <li>Applied low-risk optimizations for GUI constants, time formatting, logging directory creation, and algorithm node-list reuse.</li>
 <li>Updated the performance/SOLID/memory documentation with the current status, tradeoffs, and verification result.</li>
 <li>Added a versioned stylesheet URL on the GitHub Pages home page to avoid stale cached CSS breaking the prototype preview.</li>
+<li>Fixed animated max-value replay so visible node <code>max=</code> labels update step-by-step instead of showing the final maximum before animation starts.</li>
+<li>Added JUnit 5 unit tests and JaCoCo coverage reporting with <code>mvn test</code>.</li>
 </ul>
 <h2 id="scope">Scope</h2>
 <p>Codex helped with repository documentation, packaging instructions, GitHub Pages structure, and static prototype updates. Runtime application logs are still written by the Java application to the user-specific log paths documented on the main page.</p>

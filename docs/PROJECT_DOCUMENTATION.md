@@ -173,13 +173,16 @@ Fields:
 
 ## Animation Flow
 
-The election is computed before animation starts. The animation thread then iterates over the recorded `AnimationStep` list:
+The election is computed before animation starts on a simulation network. For animated runs, the GUI then creates a fresh display network from the same IDs so visible `maxKnownId` labels start from each process's original ID.
 
-1. Set the active step on `TorusGridPanel`.
-2. Append a log line describing the message.
-3. Sleep for 1000 milliseconds.
-4. Continue until all steps are shown.
-5. Clear the active highlight and display the final election summary.
+The animation thread iterates over the recorded `AnimationStep` list:
+
+1. Apply the transmitted value to the receiver in the display network when the step updated that receiver.
+2. Set the active step on `TorusGridPanel`.
+3. Append a log line describing the message.
+4. Sleep for 1000 milliseconds.
+5. Continue until all steps are shown.
+6. Clear the active highlight, mark the leader on the display network, and display the final election summary.
 
 Animation phase meaning:
 
@@ -188,6 +191,24 @@ Animation phase meaning:
 - The highlighted receiver is the process currently receiving that value.
 - The red message marker/arrow carries the sender's current `maxKnownId`.
 - If the received value is larger than the receiver's current `maxKnownId`, the receiver updates and is shown with the stronger receiver color.
+
+## Testing
+
+The project uses JUnit 5 for unit tests and JaCoCo for coverage reporting. Run:
+
+```bash
+mvn test
+```
+
+Current tests cover:
+
+- `Position`, `ProcessNode`, and `AnimationStep` model behavior.
+- `TorusNetwork` construction, validation, unmodifiable views, and wrap-around neighbors.
+- `TorusElectionAlgorithm` convergence, leader selection, message counts, reset behavior, logs, and animation-step data.
+- `AppLog` append behavior against a temporary user home.
+- `TorusGridPanel` painting in headless mode for empty, network, active-step, and cleared animation states.
+
+JaCoCo writes the HTML coverage report to `target/site/jacoco/index.html`.
 
 Reset behavior:
 
@@ -219,6 +240,12 @@ Compile:
 
 ```bash
 mvn compile
+```
+
+Test and generate coverage:
+
+```bash
+mvn test
 ```
 
 Run:
