@@ -16,6 +16,8 @@ This page records the documentation and repository setup work completed with Cod
 - Applied low-risk optimizations for GUI constants, time formatting, logging directory creation, and algorithm node-list reuse.
 - Updated the performance/SOLID/memory documentation with the current status, tradeoffs, and verification result.
 - Added a versioned stylesheet URL on the GitHub Pages home page to avoid stale cached CSS breaking the prototype preview.
+- Fixed animated max-value replay so visible node `max=` labels update step-by-step instead of showing the final maximum before animation starts.
+- Added JUnit 5 unit tests and JaCoCo coverage reporting with `mvn test`.
 
 ## Scope
 
