@@ -19,6 +19,14 @@
 <h2 id="overview">Overview</h2>
 <p>Torus Network Leader Election GUI is a Java Swing application that demonstrates leader election on a two-dimensional torus topology. It models each process as a grid node, connects every node to four neighbors with wrap-around edges, and elects the process with the largest ID as leader by propagating maximum known IDs through the network.</p>
 <p>The application is intended for interactive demonstration: users can configure the network, run the election immediately, or animate each message exchange.</p>
+<h2 id="prototype">Prototype</h2>
+<p>The project includes a desktop Swing prototype and a static HTML documentation preview:</p>
+<ul>
+<li>The executable prototype is <code>gui.TorusElectionGUI</code>, launched from <code>Main</code>.</li>
+<li>The GitHub Pages preview is in <code>docs/index.html</code> under the "Current GUI Prototype" section.</li>
+<li>The HTML preview is not a browser implementation of the algorithm; it is a static visual guide to the Swing application's layout and workflow.</li>
+<li>The full interactive behavior runs through the Java desktop app, packaged as a jar, <code>.deb</code>, <code>.exe</code>, or snap.</li>
+</ul>
 <h2 id="package-structure">Package Structure</h2>
 <pre><code class="language-text">
 src/
@@ -155,10 +163,18 @@ src/
 <ol>
 <li>Set the active step on <code>TorusGridPanel</code>.</li>
 <li>Append a log line describing the message.</li>
-<li>Sleep for 250 milliseconds.</li>
+<li>Sleep for 1000 milliseconds.</li>
 <li>Continue until all steps are shown.</li>
 <li>Clear the active highlight and display the final election summary.</li>
 </ol>
+<p>Animation phase meaning:</p>
+<ul>
+<li>One animation phase represents one recorded <code>AnimationStep</code>.</li>
+<li>The highlighted sender is the neighbor currently transmitting a value.</li>
+<li>The highlighted receiver is the process currently receiving that value.</li>
+<li>The red message marker/arrow carries the sender's current <code>maxKnownId</code>.</li>
+<li>If the received value is larger than the receiver's current <code>maxKnownId</code>, the receiver updates and is shown with the stronger receiver color.</li>
+</ul>
 <p>Reset behavior:</p>
 <ul>
 <li>Sets <code>animationRunning</code> to <code>false</code>.</li>
