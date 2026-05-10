@@ -405,7 +405,7 @@ Source: `src/main/java/gui/TorusElectionGUI.java`
 - Purpose: Executes the election and starts replaying recorded animation steps.
 - Parameters: None.
 - Returns: Nothing.
-- Side effects: Parses user input, creates a new network and algorithm, runs the election, updates animation status, and starts the animation thread.
+- Side effects: Parses user input, creates a simulation network and algorithm, runs the election, creates a fresh display network for replay, updates animation status, and starts the animation thread.
 - Errors: Shows an input error dialog for parsing or validation failures.
 - Guard: Returns immediately if an animation is already running.
 
@@ -424,9 +424,17 @@ Source: `src/main/java/gui/TorusElectionGUI.java`
 - Purpose: Replays the election's recorded animation steps on a background thread.
 - Parameters: `election` supplies animation steps and final summary data.
 - Returns: Nothing.
-- Side effects: Sets `animationRunning`, appends log lines, updates `gridPanel`, updates final status, and manages `animationThread`.
+- Side effects: Sets `animationRunning`, applies updated max-known values to the display network during replay, appends log lines, updates `gridPanel`, marks the final leader, updates final status, and manages `animationThread`.
 - Threading: Uses a daemon thread for delays and `SwingUtilities.invokeLater` for UI updates.
 - Errors: Handles `InterruptedException` by clearing animation state and marking the thread interrupted.
+
+### `markLeader(TorusNetwork network)`
+
+- Visibility: `private`
+- Purpose: Marks the node with the largest original process ID as leader on the display network after animated replay completes.
+- Parameters: `network` supplies the display nodes to inspect and update.
+- Returns: Nothing.
+- Side effects: Mutates each node's leader flag.
 
 ### `updateStatus(TorusNetwork network, TorusElectionAlgorithm election)`
 
