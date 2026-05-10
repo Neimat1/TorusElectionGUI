@@ -132,4 +132,4 @@ The project was tested after the latest updates:
 mvn test
 ```
 
-Result: 19 tests run, 0 failures, 0 errors. JaCoCo report generated.
+Result: 21 tests run, 0 failures, 0 errors. JaCoCo report generated.

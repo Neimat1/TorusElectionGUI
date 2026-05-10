@@ -3,4 +3,4 @@ set -eu
 
 JAVA_BIN="$(find "$SNAP/usr/lib/jvm" -path '*/bin/java' -type f | head -n 1)"
 
-exec "$JAVA_BIN" -jar "$SNAP/jar/torus-election-gui-1.0.0.jar"
+exec "$JAVA_BIN" -jar "$SNAP/jar/app.jar"
