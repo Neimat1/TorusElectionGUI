@@ -1,83 +1,131 @@
 # Performance, SOLID, And Memory Review
 
-This document summarizes the current design choices and the changes made to reduce avoidable allocation, tighten encapsulation, and keep the code easier to maintain.
+Last reviewed: May 11, 2026.
 
-## Performance Updates
+This project is acceptable for the current desktop GUI scope. The GUI limits the network to `8 x 8`, so CPU and memory use are predictable. The core topology, algorithm, logging, and rendering code now avoid the main unnecessary allocations that existed earlier.
 
-### Cached Network Collections
+## Current Status
 
-`TorusNetwork` now builds and stores:
+| Area | Status | Notes |
+| --- | --- | --- |
+| Performance | Meets current scope | Cached topology, reused render constants, and bounded GUI input keep runtime cost small. |
+| SOLID | Mostly meets current scope | Domain packages are separated well. The main remaining compromise is that `TorusElectionGUI` still owns UI construction, input parsing, command handling, and animation coordination. |
+| Memory | Meets current scope | Cached immutable lists reduce temporary allocation. Animation history is intentionally retained for replay and is bounded by the `8 x 8` GUI limit. |
+
+## Changes Applied
+
+### Network Topology
+
+`TorusNetwork` builds and stores:
 
 - one row-major `allNodes` list
 - one precomputed neighbor list per node
 
-Previously, `getAllNodes()` created a new list on each call, and `getNeighbors()` created a new list for each node lookup. The election loop calls these methods repeatedly, so caching removes unnecessary allocation and repeated topology work.
+`getAllNodes()` and `getNeighbors(...)` return unmodifiable cached lists. This removes repeated list allocation during election and animation while protecting internal collections from caller mutation.
 
-### Reused Rendering Constants
+### Election Algorithm
 
-`TorusGridPanel` now uses static constants for repeated `Color`, `Font`, and `BasicStroke` values.
+`TorusElectionAlgorithm.electLeader()` now reuses the cached node list throughout the run, including the final maximum-ID lookup. It also clears previous run data and resets each node before a new election, making repeated runs safer.
 
-This avoids creating new graphics helper objects during every repaint, which matters during animation because the panel repaints frequently.
+The algorithm exposes read-only views from:
 
-### Single Node List In Election Loop
+- `getAnimationSteps()`
+- `getExecutionLog()`
 
-`TorusElectionAlgorithm.electLeader()` now stores `network.getAllNodes()` in a local variable and reuses it through the run.
+This keeps callers from mutating algorithm-owned collections.
 
-This makes the loop intent clearer and avoids repeated method calls while preserving behavior.
+### Rendering
 
-## SOLID Updates
+`TorusGridPanel` uses static constants for repeated `Color`, `Font`, and `BasicStroke` objects. This avoids recreating graphics helper objects during frequent repaint calls.
 
-### Encapsulation
+`TorusElectionGUI` now also reuses UI colors, status colors, legend colors, the rounded-panel border stroke, and the time formatter instead of constructing those repeatedly.
 
-The broad Lombok `@Getter` on `TorusNetwork` was removed because it generated `getNodes()`, exposing the internal two-dimensional node array. The class now exposes only the operations needed by callers:
+### Logging
 
-- `getRows()`
-- `getCols()`
-- `getNode(...)`
-- `getAllNodes()`
-- `getNeighbors(...)`
+`AppLog.append(...)` still writes synchronously, which is acceptable because log volume is small. It now creates the log directory once per successful run instead of calling `Files.createDirectories(...)` on every log append.
 
-`TorusElectionAlgorithm` also returns read-only views for animation steps and execution logs. Callers can read run data without mutating algorithm-owned collections.
+If a write fails, the logger resets the directory-ready flag and reports the error to `System.err`, so a later append can retry directory creation.
 
-### Single Responsibility Boundaries
+## SOLID Review
 
-The existing package split remains appropriate for this project size:
+### Single Responsibility
 
-- `network` owns topology.
-- `algorithm` owns election state transitions.
-- `model` owns simple state objects.
+The package boundaries are reasonable:
+
+- `network` owns torus topology and neighbor lookup.
+- `algorithm` owns leader-election state transitions.
+- `model` owns small data/state objects.
+- `logging` owns persistent application log paths and writes.
 - `gui` owns Swing rendering and user workflow.
 
-The main remaining SOLID limitation is that `TorusElectionGUI` still coordinates UI construction, validation, command handling, and animation. For a larger application, the next improvement would be extracting input parsing and animation control into separate classes.
+The main remaining improvement would be splitting `TorusElectionGUI` into smaller collaborators:
 
-### Safer Algorithm Reuse
+- an input parser/validator for rows, columns, and process IDs
+- an animation controller for thread lifecycle
+- a view builder for Swing layout
 
-`ProcessNode` now has `resetElectionState()`, and `TorusElectionAlgorithm.electLeader()` resets node election state before every run.
+That refactor is not required for the current project size, but it would improve testability if the GUI grows.
 
-This makes repeated calls safer and reduces hidden coupling to the GUI's current habit of creating a fresh `TorusNetwork` for each run.
+### Open/Closed
 
-## Memory Updates
+The current algorithm is concrete and direct. If multiple election algorithms are added later, introduce a small interface such as `LeaderElectionAlgorithm` with methods for execution, logs, animation steps, rounds, and message count.
 
-### Reduced Short-Lived Objects
+### Liskov Substitution
 
-The main allocation reductions are:
+The project does not currently rely on inheritance for domain behavior. This keeps Liskov risk low.
 
-- no per-call list allocation in `getAllNodes()`
-- no per-call neighbor list allocation in `getNeighbors()`
-- no repeated paint-time allocation for common colors, fonts, and strokes
+### Interface Segregation
 
-### Controlled Collection Mutation
+There are no oversized public interfaces. Public APIs are small and task-specific.
 
-`TorusNetwork.getAllNodes()` and `TorusNetwork.getNeighbors(...)` return unmodifiable lists. `TorusElectionAlgorithm.getAnimationSteps()` and `getExecutionLog()` return unmodifiable views.
+### Dependency Inversion
 
-This avoids accidental external mutation while still avoiding defensive copy allocation on every read.
+The GUI directly creates `TorusNetwork` and `TorusElectionAlgorithm`. This is fine for a small Swing application. If the app gains tests or multiple algorithm implementations, inject an algorithm factory into the GUI instead of constructing the algorithm directly.
 
-### Current Memory Tradeoff
+## Performance Review
 
-The network now keeps cached neighbor lists, which adds a small fixed memory cost per node. In exchange, animation and election runs avoid repeated temporary list allocation. With the GUI capped at `8 x 8`, the fixed cost is tiny and predictable.
+For a grid of `n = rows * cols`:
 
-## Remaining Practical Limits
+- network construction is `O(n)`
+- each round processes four directed neighbor exchanges per node, so one round is `O(4n)`, effectively `O(n)`
+- memory for topology is `O(n)`
+- memory for animation is `O(steps)`, where `steps` is the number of recorded message exchanges
 
-- The GUI limits the network to `8 x 8`, so algorithmic cost is small in normal use.
-- Animation intentionally stores every message as an `AnimationStep`; this is necessary for replay. If the grid limit is raised significantly, consider streaming animation events or adding a "run without recording" mode.
-- Swing work should remain on the Event Dispatch Thread. The animation thread already delegates UI updates through `SwingUtilities.invokeLater`.
+The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. With the current `8 x 8` cap, this is acceptable.
+
+## Memory Review
+
+The project now reduces short-lived allocation by:
+
+- caching node and neighbor lists
+- returning unmodifiable views instead of defensive copies
+- reusing render constants
+- reusing the GUI time formatter
+- avoiding repeated log-directory creation after the first successful write
+
+The main retained objects during a run are:
+
+- `ProcessNode` objects
+- immutable `Position` objects
+- cached neighbor lists
+- execution log strings
+- recorded `AnimationStep` objects
+
+This is appropriate for the current GUI cap.
+
+## Remaining Tradeoffs
+
+- `TorusElectionGUI` is still the largest class and mixes several responsibilities.
+- Animation stores all steps before playback. This supports replay but would need redesign if much larger grids are allowed.
+- Logging is synchronous. This keeps the code simple, but a future high-volume logger should use buffering or a background writer.
+- There are no automated tests in the repository yet. Adding unit tests for `TorusNetwork`, `TorusElectionAlgorithm`, and `AppLog` would make future refactors safer.
+
+## Verification
+
+The project was compiled after the latest updates:
+
+```bash
+mvn compile
+```
+
+Result: build successful.
