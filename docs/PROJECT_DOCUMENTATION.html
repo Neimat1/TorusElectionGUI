@@ -159,13 +159,15 @@ src/
 <li>The GUI displays final status, logs, and optionally replays the recorded steps.</li>
 </ol>
 <h2 id="animation-flow">Animation Flow</h2>
-<p>The election is computed before animation starts. The animation thread then iterates over the recorded <code>AnimationStep</code> list:</p>
+<p>The election is computed before animation starts on a simulation network. For animated runs, the GUI then creates a fresh display network from the same IDs so visible <code>maxKnownId</code> labels start from each process's original ID.</p>
+<p>The animation thread iterates over the recorded <code>AnimationStep</code> list:</p>
 <ol>
+<li>Apply the transmitted value to the receiver in the display network when the step updated that receiver.</li>
 <li>Set the active step on <code>TorusGridPanel</code>.</li>
 <li>Append a log line describing the message.</li>
 <li>Sleep for 1000 milliseconds.</li>
 <li>Continue until all steps are shown.</li>
-<li>Clear the active highlight and display the final election summary.</li>
+<li>Clear the active highlight, mark the leader on the display network, and display the final election summary.</li>
 </ol>
 <p>Animation phase meaning:</p>
 <ul>
@@ -175,6 +177,20 @@ src/
 <li>The red message marker/arrow carries the sender's current <code>maxKnownId</code>.</li>
 <li>If the received value is larger than the receiver's current <code>maxKnownId</code>, the receiver updates and is shown with the stronger receiver color.</li>
 </ul>
+<h2 id="testing">Testing</h2>
+<p>The project uses JUnit 5 for unit tests and JaCoCo for coverage reporting. Run:</p>
+<pre><code class="language-bash">
+mvn test
+</code></pre>
+<p>Current tests cover:</p>
+<ul>
+<li><code>Position</code>, <code>ProcessNode</code>, and <code>AnimationStep</code> model behavior.</li>
+<li><code>TorusNetwork</code> construction, validation, unmodifiable views, and wrap-around neighbors.</li>
+<li><code>TorusElectionAlgorithm</code> convergence, leader selection, message counts, reset behavior, logs, and animation-step data.</li>
+<li><code>AppLog</code> append behavior against a temporary user home.</li>
+<li><code>TorusGridPanel</code> painting in headless mode for empty, network, active-step, and cleared animation states.</li>
+</ul>
+<p>JaCoCo writes the HTML coverage report to <code>target/site/jacoco/index.html</code>.</p>
 <p>Reset behavior:</p>
 <ul>
 <li>Sets <code>animationRunning</code> to <code>false</code>.</li>
@@ -202,6 +218,10 @@ src/
 <p>Compile:</p>
 <pre><code class="language-bash">
 mvn compile
+</code></pre>
+<p>Test and generate coverage:</p>
+<pre><code class="language-bash">
+mvn test
 </code></pre>
 <p>Run:</p>
 <pre><code class="language-bash">

@@ -91,7 +91,7 @@ For a grid of `n = rows * cols`:
 - memory for topology is `O(n)`
 - memory for animation is `O(steps)`, where `steps` is the number of recorded message exchanges
 
-The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. With the current `8 x 8` cap, this is acceptable.
+The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. Animated runs also create a fresh display network after computing the simulation steps, which keeps visible `maxKnownId` values step-accurate during replay. With the current `8 x 8` cap, this is acceptable.
 
 ## Memory Review
 
@@ -110,22 +110,26 @@ The main retained objects during a run are:
 - cached neighbor lists
 - execution log strings
 - recorded `AnimationStep` objects
+- a second short-lived display network during animated runs
 
 This is appropriate for the current GUI cap.
+
+## Test Coverage
+
+The project now has a JUnit 5 suite and JaCoCo coverage reporting through `mvn test`. Coverage is strongest in the model, network, and algorithm layers, with a headless smoke test for `TorusGridPanel`. The full `TorusElectionGUI` window is not opened in unit tests because constructing the frame starts a visible Swing application; GUI workflow testing should be handled separately with a desktop-capable integration test if needed.
 
 ## Remaining Tradeoffs
 
 - `TorusElectionGUI` is still the largest class and mixes several responsibilities.
 - Animation stores all steps before playback. This supports replay but would need redesign if much larger grids are allowed.
 - Logging is synchronous. This keeps the code simple, but a future high-volume logger should use buffering or a background writer.
-- There are no automated tests in the repository yet. Adding unit tests for `TorusNetwork`, `TorusElectionAlgorithm`, and `AppLog` would make future refactors safer.
 
 ## Verification
 
-The project was compiled after the latest updates:
+The project was tested after the latest updates:
 
 ```bash
-mvn compile
+mvn test
 ```
 
-Result: build successful.
+Result: 19 tests run, 0 failures, 0 errors. JaCoCo report generated.

@@ -6,7 +6,7 @@ A Java Swing desktop application for visualizing leader election in a two-dimens
 
 - JDK 17 or later
 - Maven 3.8 or later
-- Internet access on the first Maven build so Maven can download Lombok
+- Internet access on the first Maven build so Maven can download Lombok, JUnit, and JaCoCo
 
 ## Compile
 
@@ -179,7 +179,7 @@ TorusElectionAlgorithm propagates max-known IDs until stable
 AnimationStep records are generated for visualization
    |
    v
-TorusGridPanel renders nodes, links, messages, leader, and footer
+TorusGridPanel renders final state or replays steps on a fresh display network
 ```
 
 ## Algorithm Summary
@@ -194,6 +194,22 @@ The algorithm records:
 - total messages exchanged
 - a textual execution log
 - animation steps containing sender, receiver, transmitted value, round number, and whether the receiver updated
+
+Animated runs execute the algorithm on a simulation network first, then replay the recorded steps onto a fresh display network. This keeps each visible `max=` label aligned with the current animation step instead of showing the final maximum before replay begins.
+
+## Tests
+
+Run the unit tests and generate the JaCoCo coverage report:
+
+```bash
+mvn test
+```
+
+The suite covers the model objects, torus topology validation and neighbor wrapping, election convergence and animation-step recording, persistent logging, and a headless rendering smoke test for `TorusGridPanel`. The generated coverage report is written to:
+
+```text
+target/site/jacoco/index.html
+```
 
 ## UI Components
 
