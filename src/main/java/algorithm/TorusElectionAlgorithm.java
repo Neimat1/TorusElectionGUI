@@ -27,10 +27,10 @@ public class TorusElectionAlgorithm {
         rounds = 0;
         messages = 0;
 
-        executionLog.add("Initialization complete. Total processes: " + network.getAllNodes().size());
+        List<ProcessNode> nodes = network.getAllNodes();
+        executionLog.add("Initialization complete. Total processes: " + nodes.size());
         executionLog.add("Starting leader election.");
 
-        List<ProcessNode> nodes = network.getAllNodes();
         for (ProcessNode node : nodes) {
             node.resetElectionState();
         }
@@ -67,7 +67,7 @@ public class TorusElectionAlgorithm {
             executionLog.add("Round " + rounds + " completed.");
         }
 
-        int leaderId = findMaximumId();
+        int leaderId = findMaximumId(nodes);
         for (ProcessNode node : nodes) {
             if (node.getId() == leaderId) {
                 node.setLeader(true);
@@ -77,9 +77,9 @@ public class TorusElectionAlgorithm {
         }
     }
 
-    private int findMaximumId() {
+    private int findMaximumId(List<ProcessNode> nodes) {
         int max = Integer.MIN_VALUE;
-        for (ProcessNode node : network.getAllNodes()) {
+        for (ProcessNode node : nodes) {
             max = Math.max(max, node.getId());
         }
         return max;

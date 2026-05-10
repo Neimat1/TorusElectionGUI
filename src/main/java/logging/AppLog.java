@@ -11,13 +11,17 @@ public final class AppLog {
     private static final String APP_DIRECTORY = "torus-election-gui";
     private static final Path LOG_DIRECTORY = resolveLogDirectory();
     private static final Path LOG_FILE = LOG_DIRECTORY.resolve("torus-election-gui.log");
+    private static boolean logDirectoryReady;
 
     private AppLog() {
     }
 
     public static synchronized void append(String text) {
         try {
-            Files.createDirectories(LOG_DIRECTORY);
+            if (!logDirectoryReady) {
+                Files.createDirectories(LOG_DIRECTORY);
+                logDirectoryReady = true;
+            }
             Files.writeString(
                     LOG_FILE,
                     text,
@@ -26,6 +30,7 @@ public final class AppLog {
                     StandardOpenOption.APPEND
             );
         } catch (IOException ex) {
+            logDirectoryReady = false;
             System.err.println("Failed to write application log: " + ex.getMessage());
         }
     }

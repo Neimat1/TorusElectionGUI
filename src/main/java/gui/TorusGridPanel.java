@@ -94,7 +94,9 @@ public class TorusGridPanel extends JPanel {
     private void drawEmpty(Graphics2D g2) {
         g2.setColor(EMPTY_TEXT);
         g2.setFont(EMPTY_FONT);
-        g2.drawString("Click Run Election or Auto Animate to visualize the Torus Network", 60, 240);
+        g2.drawString("Click Run Election ", 60, 240);
+        g2.drawString("or Auto Animate " ,60, 260);
+        g2.drawString("to visualize the Torus Network", 60, 280);
     }
 
     private Layout createLayout() {
