@@ -6,6 +6,15 @@ Torus Network Leader Election GUI is a Java Swing application that demonstrates 
 
 The application is intended for interactive demonstration: users can configure the network, run the election immediately, or animate each message exchange.
 
+## Prototype
+
+The project includes a desktop Swing prototype and a static HTML documentation preview:
+
+- The executable prototype is `gui.TorusElectionGUI`, launched from `Main`.
+- The GitHub Pages preview is in `docs/index.html` under the "Current GUI Prototype" section.
+- The HTML preview is not a browser implementation of the algorithm; it is a static visual guide to the Swing application's layout and workflow.
+- The full interactive behavior runs through the Java desktop app, packaged as a jar, `.deb`, `.exe`, or snap.
+
 ## Package Structure
 
 ```text
@@ -168,9 +177,17 @@ The election is computed before animation starts. The animation thread then iter
 
 1. Set the active step on `TorusGridPanel`.
 2. Append a log line describing the message.
-3. Sleep for 250 milliseconds.
+3. Sleep for 1000 milliseconds.
 4. Continue until all steps are shown.
 5. Clear the active highlight and display the final election summary.
+
+Animation phase meaning:
+
+- One animation phase represents one recorded `AnimationStep`.
+- The highlighted sender is the neighbor currently transmitting a value.
+- The highlighted receiver is the process currently receiving that value.
+- The red message marker/arrow carries the sender's current `maxKnownId`.
+- If the received value is larger than the receiver's current `maxKnownId`, the receiver updates and is shown with the stronger receiver color.
 
 Reset behavior:
 
