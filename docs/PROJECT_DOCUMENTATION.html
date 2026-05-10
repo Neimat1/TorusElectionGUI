@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Project Documentation - Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="assets/torus-election-gui.png" alt=""><span>Torus Election GUI</span></a>
+        <nav class="nav" aria-label="Documentation navigation"><a href="index.html">Home</a><a href="RUNNING.html">Run</a><a href="PACKAGING.html">Package</a><a href="SNAP_PACKAGING.html">Snap</a></nav>
+    </div>
+</header>
+<main class="doc-page"><article class="doc-article">
+<h1 id="project-documentation">Project Documentation</h1>
+<h2 id="overview">Overview</h2>
+<p>Torus Network Leader Election GUI is a Java Swing application that demonstrates leader election on a two-dimensional torus topology. It models each process as a grid node, connects every node to four neighbors with wrap-around edges, and elects the process with the largest ID as leader by propagating maximum known IDs through the network.</p>
+<p>The application is intended for interactive demonstration: users can configure the network, run the election immediately, or animate each message exchange.</p>
+<h2 id="package-structure">Package Structure</h2>
+<pre><code class="language-text">
+src/
+  main/
+    java/
+      Main.java
+      algorithm/
+        TorusElectionAlgorithm.java
+      gui/
+        TorusElectionGUI.java
+        TorusGridPanel.java
+      logging/
+        AppLog.java
+      model/
+        AnimationStep.java
+        Position.java
+        ProcessNode.java
+      network/
+        TorusNetwork.java
+</code></pre>
+<h2 id="component-responsibilities">Component Responsibilities</h2>
+<h3 id="main"><code>Main</code></h3>
+<p>Entry point for the application. It starts <code>TorusElectionGUI</code> using <code>SwingUtilities.invokeLater</code>, which ensures Swing components are created on the Event Dispatch Thread.</p>
+<h3 id="gui-toruselectiongui"><code>gui.TorusElectionGUI</code></h3>
+<p>Main application window and workflow coordinator.</p>
+<p>Responsibilities:</p>
+<ul>
+<li>Builds the Swing layout and all panels.</li>
+<li>Reads rows, columns, and process IDs from user input.</li>
+<li>Validates that the number of IDs equals <code>rows * columns</code>.</li>
+<li>Validates that process IDs are unique.</li>
+<li>Creates <code>TorusNetwork</code> and <code>TorusElectionAlgorithm</code> instances.</li>
+<li>Runs the election immediately or launches an animation thread.</li>
+<li>Updates status labels and execution log output.</li>
+<li>Stops a running animation when <code>Reset</code> is clicked.</li>
+</ul>
+<p>Important fields:</p>
+<ul>
+<li><code>currentNetwork</code>: active torus network shown in the visualization.</li>
+<li><code>gridPanel</code>: custom drawing panel for the network.</li>
+<li><code>animationRunning</code>: shared flag used to stop animation safely.</li>
+<li><code>animationThread</code>: background thread that replays recorded animation steps.</li>
+</ul>
+<h3 id="gui-torusgridpanel"><code>gui.TorusGridPanel</code></h3>
+<p>Custom <code>JPanel</code> responsible for rendering the torus visualization.</p>
+<p>Responsibilities:</p>
+<ul>
+<li>Draws direct horizontal and vertical neighbor links.</li>
+<li>Draws dashed wrap-around links to show torus behavior.</li>
+<li>Draws process nodes with ID and <code>maxKnownId</code>.</li>
+<li>Highlights sender, receiver, and leader states.</li>
+<li>Draws animated transmitted values between sender and receiver.</li>
+<li>Reserves a footer band for wrap-around notes so text remains readable.</li>
+</ul>
+<p>Visual state colors:</p>
+<ul>
+<li>Process: light blue</li>
+<li>Sender: yellow</li>
+<li>Receiver: red or light red</li>
+<li>Leader: green</li>
+</ul>
+<h3 id="logging-applog"><code>logging.AppLog</code></h3>
+<p>Small file logger for persistent user logs.</p>
+<p>Responsibilities:</p>
+<ul>
+<li>Resolves the log directory from <code>XDG_DATA_HOME</code> when set.</li>
+<li>Uses <code>%LOCALAPPDATA%\torus-election-gui\logs</code> on Windows.</li>
+<li>Falls back to <code>~/.local/share/torus-election-gui/logs</code>.</li>
+<li>Appends visible GUI log text to <code>torus-election-gui.log</code>.</li>
+<li>Creates the log directory on first write.</li>
+</ul>
+<h3 id="network-torusnetwork"><code>network.TorusNetwork</code></h3>
+<p>Owns the topology and node grid.</p>
+<p>Responsibilities:</p>
+<ul>
+<li>Validates minimum network size of <code>2 x 2</code>.</li>
+<li>Validates that ID count matches the grid size.</li>
+<li>Creates a two-dimensional <code>ProcessNode</code> array.</li>
+<li>Returns all nodes in row-major order.</li>
+<li>Returns four neighbors for any node using modular arithmetic:</li>
+</ul>
+<p>- right: <code>(c + 1) % cols</code> - left: <code>(c - 1 + cols) % cols</code> - down: <code>(r + 1) % rows</code> - up: <code>(r - 1 + rows) % rows</code></p>
+<h3 id="algorithm-toruselectionalgorithm"><code>algorithm.TorusElectionAlgorithm</code></h3>
+<p>Runs the leader election over a <code>TorusNetwork</code>.</p>
+<p>Responsibilities:</p>
+<ul>
+<li>Clears previous run state before each election.</li>
+<li>Repeatedly propagates max-known IDs between neighbors.</li>
+<li>Counts rounds and messages.</li>
+<li>Records each message as an <code>AnimationStep</code>.</li>
+<li>Records human-readable execution log lines.</li>
+<li>Marks the node with the maximum original process ID as leader.</li>
+</ul>
+<p>The algorithm stops when a full round completes with no <code>maxKnownId</code> changes.</p>
+<h3 id="model-processnode"><code>model.ProcessNode</code></h3>
+<p>Represents one process in the torus.</p>
+<p>Fields:</p>
+<ul>
+<li><code>id</code>: immutable process ID.</li>
+<li><code>position</code>: immutable row/column position.</li>
+<li><code>maxKnownId</code>: largest ID known by this process so far.</li>
+<li><code>leader</code>: whether this process is the elected leader.</li>
+</ul>
+<h3 id="model-position"><code>model.Position</code></h3>
+<p>Immutable row/column value object. It implements <code>equals</code>, <code>hashCode</code>, and <code>toString</code>, allowing positions to be compared during animation highlighting.</p>
+<h3 id="model-animationstep"><code>model.AnimationStep</code></h3>
+<p>Immutable record-like object describing one transmitted message.</p>
+<p>Fields:</p>
+<ul>
+<li>sender position</li>
+<li>receiver position</li>
+<li>sender ID</li>
+<li>receiver ID</li>
+<li>transmitted max-known value</li>
+<li>round number</li>
+<li>whether the receiver updated its own max-known ID</li>
+</ul>
+<h2 id="election-flow">Election Flow</h2>
+<ol>
+<li>The user enters rows, columns, and process IDs.</li>
+<li><code>TorusElectionGUI</code> validates and parses input.</li>
+<li><code>TorusNetwork</code> creates the process grid.</li>
+<li><code>TorusElectionAlgorithm.electLeader()</code> starts with every process knowing only its own ID.</li>
+<li>For each round, every process checks each of its four neighbors.</li>
+<li>The neighbor's <code>maxKnownId</code> is transmitted to the current process.</li>
+<li>If the transmitted value is larger, the current process updates its own <code>maxKnownId</code>.</li>
+<li>Each transmission is saved as an <code>AnimationStep</code>.</li>
+<li>Rounds continue until no process updates.</li>
+<li>The process with the maximum original ID is marked as leader.</li>
+<li>The GUI displays final status, logs, and optionally replays the recorded steps.</li>
+</ol>
+<h2 id="animation-flow">Animation Flow</h2>
+<p>The election is computed before animation starts. The animation thread then iterates over the recorded <code>AnimationStep</code> list:</p>
+<ol>
+<li>Set the active step on <code>TorusGridPanel</code>.</li>
+<li>Append a log line describing the message.</li>
+<li>Sleep for 250 milliseconds.</li>
+<li>Continue until all steps are shown.</li>
+<li>Clear the active highlight and display the final election summary.</li>
+</ol>
+<p>Reset behavior:</p>
+<ul>
+<li>Sets <code>animationRunning</code> to <code>false</code>.</li>
+<li>Interrupts <code>animationThread</code> if it is alive.</li>
+<li>Clears the network, active highlight, status labels, and log output.</li>
+</ul>
+<p>Persistent log behavior:</p>
+<ul>
+<li>GUI log text is appended to <code>~/.local/share/torus-election-gui/logs/torus-election-gui.log</code>.</li>
+<li>If <code>XDG_DATA_HOME</code> is set, logs are appended to <code>$XDG_DATA_HOME/torus-election-gui/logs/torus-election-gui.log</code>.</li>
+<li>On Windows, logs are appended to <code>%LOCALAPPDATA%\torus-election-gui\logs\torus-election-gui.log</code>.</li>
+<li>Reset clears only the visible log panel, not the persistent log file.</li>
+</ul>
+<h2 id="validation-rules">Validation Rules</h2>
+<ul>
+<li>Rows must be between <code>2</code> and <code>8</code> through the spinner model.</li>
+<li>Columns must be between <code>2</code> and <code>8</code> through the spinner model.</li>
+<li>The ID input cannot be empty.</li>
+<li>The number of IDs must equal <code>rows * columns</code>.</li>
+<li>All process IDs must be unique.</li>
+<li>IDs are parsed as Java <code>int</code> values.</li>
+</ul>
+<h2 id="build-commands">Build Commands</h2>
+<p>This project uses Maven and Lombok. Lombok is configured as a <code>provided</code> dependency and annotation processor in <code>pom.xml</code>, so it is needed only while compiling and is not packaged as a runtime dependency.</p>
+<p>Compile:</p>
+<pre><code class="language-bash">
+mvn compile
+</code></pre>
+<p>Run:</p>
+<pre><code class="language-bash">
+mvn compile
+java -cp target/classes Main
+</code></pre>
+<p>Package:</p>
+<pre><code class="language-bash">
+mvn package
+</code></pre>
+<p>Run generated jar:</p>
+<pre><code class="language-bash">
+java -jar target/torus-election-gui-1.0.0.jar
+</code></pre>
+<p>For first-time setup, IDE notes, and troubleshooting, see <a href="RUNNING.html">RUNNING.md</a>.</p>
+<p>For Ubuntu <code>.deb</code> and Windows <code>.exe</code> installer generation, see <a href="PACKAGING.html">PACKAGING.md</a>.</p>
+<p>For method-level contracts, parameters, return values, side effects, and errors, see <a href="METHOD_SPECIFICATIONS.html">METHOD_SPECIFICATIONS.md</a>.</p>
+<p>For performance, SOLID, and memory notes, see <a href="PERFORMANCE_SOLID_MEMORY.html">PERFORMANCE_SOLID_MEMORY.md</a>.</p>
+<p>For Snapcraft packaging and Snap Store publishing, see <a href="SNAP_PACKAGING.html">SNAP_PACKAGING.md</a>.</p>
+<h2 id="maintenance-notes">Maintenance Notes</h2>
+<ul>
+<li>Maven owns compilation and jar packaging through <code>pom.xml</code>.</li>
+<li>Lombok generates simple constructors, selected getters/setters, and equality methods at compile time.</li>
+<li>Network topology lists are cached and exposed as unmodifiable views to avoid repeated allocation and accidental external mutation.</li>
+<li>Swing UI updates should happen on the Event Dispatch Thread.</li>
+<li>Long-running animation work should stay outside the Event Dispatch Thread.</li>
+<li><code>TorusElectionAlgorithm</code> currently mutates <code>ProcessNode.maxKnownId</code>; create a fresh <code>TorusNetwork</code> for each run.</li>
+<li>The visualization layout reserves footer space to prevent torus wrap lines from overlapping footer text.</li>
+<li>The leader is the node with the maximum original process ID, so duplicate IDs are rejected by the GUI.</li>
+</ul>
+</article></main>
+<footer class="footer"><span>Last updated May 10, 2026.</span></footer>
+</body>
+</html>

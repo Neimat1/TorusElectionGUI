@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        rm -rf /root/.local/share/torus-election-gui || true
+
+        for home_dir in /home/*; do
+            if [ -d "$home_dir" ]; then
+                rm -rf "$home_dir/.local/share/torus-election-gui" || true
+            fi
+        done
+    ;;
+
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+    ;;
+
+    *)
+        echo "postrm called with unknown argument '$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Performance, SOLID, And Memory Review - Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="assets/torus-election-gui.png" alt=""><span>Torus Election GUI</span></a>
+        <nav class="nav" aria-label="Documentation navigation"><a href="index.html">Home</a><a href="RUNNING.html">Run</a><a href="PACKAGING.html">Package</a><a href="SNAP_PACKAGING.html">Snap</a></nav>
+    </div>
+</header>
+<main class="doc-page"><article class="doc-article">
+<h1 id="performance-solid-and-memory-review">Performance, SOLID, And Memory Review</h1>
+<p>This document summarizes the current design choices and the changes made to reduce avoidable allocation, tighten encapsulation, and keep the code easier to maintain.</p>
+<h2 id="performance-updates">Performance Updates</h2>
+<h3 id="cached-network-collections">Cached Network Collections</h3>
+<p><code>TorusNetwork</code> now builds and stores:</p>
+<ul>
+<li>one row-major <code>allNodes</code> list</li>
+<li>one precomputed neighbor list per node</li>
+</ul>
+<p>Previously, <code>getAllNodes()</code> created a new list on each call, and <code>getNeighbors()</code> created a new list for each node lookup. The election loop calls these methods repeatedly, so caching removes unnecessary allocation and repeated topology work.</p>
+<h3 id="reused-rendering-constants">Reused Rendering Constants</h3>
+<p><code>TorusGridPanel</code> now uses static constants for repeated <code>Color</code>, <code>Font</code>, and <code>BasicStroke</code> values.</p>
+<p>This avoids creating new graphics helper objects during every repaint, which matters during animation because the panel repaints frequently.</p>
+<h3 id="single-node-list-in-election-loop">Single Node List In Election Loop</h3>
+<p><code>TorusElectionAlgorithm.electLeader()</code> now stores <code>network.getAllNodes()</code> in a local variable and reuses it through the run.</p>
+<p>This makes the loop intent clearer and avoids repeated method calls while preserving behavior.</p>
+<h2 id="solid-updates">SOLID Updates</h2>
+<h3 id="encapsulation">Encapsulation</h3>
+<p>The broad Lombok <code>@Getter</code> on <code>TorusNetwork</code> was removed because it generated <code>getNodes()</code>, exposing the internal two-dimensional node array. The class now exposes only the operations needed by callers:</p>
+<ul>
+<li><code>getRows()</code></li>
+<li><code>getCols()</code></li>
+<li><code>getNode(...)</code></li>
+<li><code>getAllNodes()</code></li>
+<li><code>getNeighbors(...)</code></li>
+</ul>
+<p><code>TorusElectionAlgorithm</code> also returns read-only views for animation steps and execution logs. Callers can read run data without mutating algorithm-owned collections.</p>
+<h3 id="single-responsibility-boundaries">Single Responsibility Boundaries</h3>
+<p>The existing package split remains appropriate for this project size:</p>
+<ul>
+<li><code>network</code> owns topology.</li>
+<li><code>algorithm</code> owns election state transitions.</li>
+<li><code>model</code> owns simple state objects.</li>
+<li><code>gui</code> owns Swing rendering and user workflow.</li>
+</ul>
+<p>The main remaining SOLID limitation is that <code>TorusElectionGUI</code> still coordinates UI construction, validation, command handling, and animation. For a larger application, the next improvement would be extracting input parsing and animation control into separate classes.</p>
+<h3 id="safer-algorithm-reuse">Safer Algorithm Reuse</h3>
+<p><code>ProcessNode</code> now has <code>resetElectionState()</code>, and <code>TorusElectionAlgorithm.electLeader()</code> resets node election state before every run.</p>
+<p>This makes repeated calls safer and reduces hidden coupling to the GUI's current habit of creating a fresh <code>TorusNetwork</code> for each run.</p>
+<h2 id="memory-updates">Memory Updates</h2>
+<h3 id="reduced-short-lived-objects">Reduced Short-Lived Objects</h3>
+<p>The main allocation reductions are:</p>
+<ul>
+<li>no per-call list allocation in <code>getAllNodes()</code></li>
+<li>no per-call neighbor list allocation in <code>getNeighbors()</code></li>
+<li>no repeated paint-time allocation for common colors, fonts, and strokes</li>
+</ul>
+<h3 id="controlled-collection-mutation">Controlled Collection Mutation</h3>
+<p><code>TorusNetwork.getAllNodes()</code> and <code>TorusNetwork.getNeighbors(...)</code> return unmodifiable lists. <code>TorusElectionAlgorithm.getAnimationSteps()</code> and <code>getExecutionLog()</code> return unmodifiable views.</p>
+<p>This avoids accidental external mutation while still avoiding defensive copy allocation on every read.</p>
+<h3 id="current-memory-tradeoff">Current Memory Tradeoff</h3>
+<p>The network now keeps cached neighbor lists, which adds a small fixed memory cost per node. In exchange, animation and election runs avoid repeated temporary list allocation. With the GUI capped at <code>8 x 8</code>, the fixed cost is tiny and predictable.</p>
+<h2 id="remaining-practical-limits">Remaining Practical Limits</h2>
+<ul>
+<li>The GUI limits the network to <code>8 x 8</code>, so algorithmic cost is small in normal use.</li>
+<li>Animation intentionally stores every message as an <code>AnimationStep</code>; this is necessary for replay. If the grid limit is raised significantly, consider streaming animation events or adding a "run without recording" mode.</li>
+<li>Swing work should remain on the Event Dispatch Thread. The animation thread already delegates UI updates through <code>SwingUtilities.invokeLater</code>.</li>
+</ul>
+</article></main>
+<footer class="footer"><span>Last updated May 10, 2026.</span></footer>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Running the Repository - Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="assets/torus-election-gui.png" alt=""><span>Torus Election GUI</span></a>
+        <nav class="nav" aria-label="Documentation navigation"><a href="index.html">Home</a><a href="RUNNING.html">Run</a><a href="PACKAGING.html">Package</a><a href="SNAP_PACKAGING.html">Snap</a></nav>
+    </div>
+</header>
+<main class="doc-page"><article class="doc-article">
+<h1 id="running-the-repository">Running the Repository</h1>
+<p>This project is a Java 17 Swing application built with Maven.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>JDK 17 or later</li>
+<li>Maven 3.8 or later</li>
+<li>Internet access for the first build so Maven can download Lombok</li>
+</ul>
+<p>Check your local tools:</p>
+<pre><code class="language-bash">
+java -version
+mvn -version
+</code></pre>
+<h2 id="compile">Compile</h2>
+<p>From the repository root:</p>
+<pre><code class="language-bash">
+mvn compile
+</code></pre>
+<p>Maven downloads Lombok on the first run and uses it as an annotation processor during compilation.</p>
+<h2 id="run-from-compiled-classes">Run From Compiled Classes</h2>
+<pre><code class="language-bash">
+mvn compile
+java -cp target/classes Main
+</code></pre>
+<p>The Swing window should open with a default <code>4 x 4</code> torus input.</p>
+<h2 id="build-and-run-the-jar">Build And Run The Jar</h2>
+<p>Build the runnable jar:</p>
+<pre><code class="language-bash">
+mvn package
+</code></pre>
+<p>Run it:</p>
+<pre><code class="language-bash">
+java -jar target/torus-election-gui-1.0.0.jar
+</code></pre>
+<h2 id="native-installers">Native Installers</h2>
+<p>To generate Ubuntu <code>.deb</code> or Windows <code>.exe</code> installers, see <a href="PACKAGING.html">PACKAGING.md</a>.</p>
+<p>The Ubuntu installer can be generated directly through Maven:</p>
+<pre><code class="language-bash">
+mvn clean package -Plinux-installer
+</code></pre>
+<p>The Windows installer can be generated directly through Maven from a Windows machine:</p>
+<pre><code class="language-powershell">
+mvn clean package -Pwindows-installer
+</code></pre>
+<p>Snap packaging is documented in <a href="SNAP_PACKAGING.html">SNAP_PACKAGING.md</a>.</p>
+<h2 id="intellij-idea">IntelliJ IDEA</h2>
+<ol>
+<li>Open the repository as a Maven project.</li>
+<li>Use JDK 17 or later for the project SDK.</li>
+<li>Let IntelliJ import Maven dependencies.</li>
+<li>Ensure annotation processing is enabled if IntelliJ does not detect Lombok automatically:</li>
+</ol>
+<pre><code class="language-text">
+Settings -&gt; Build, Execution, Deployment -&gt; Compiler -&gt; Annotation Processors
+</code></pre>
+<ol>
+<li>Run the <code>Main</code> class.</li>
+</ol>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li>If Maven cannot resolve <code>org.projectlombok:lombok</code>, check network access and rerun <code>mvn compile</code>.</li>
+<li>If the IDE shows missing Lombok-generated methods but Maven compiles successfully, enable annotation processing in the IDE.</li>
+<li>If the GUI does not open in a remote or headless environment, run it on a machine with a desktop display server.</li>
+</ul>
+</article></main>
+<footer class="footer"><span>Last updated May 10, 2026.</span></footer>
+</body>
+</html>

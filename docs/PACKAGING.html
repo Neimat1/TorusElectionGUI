@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Packaging Native Installers - Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="assets/torus-election-gui.png" alt=""><span>Torus Election GUI</span></a>
+        <nav class="nav" aria-label="Documentation navigation"><a href="index.html">Home</a><a href="RUNNING.html">Run</a><a href="PACKAGING.html">Package</a><a href="SNAP_PACKAGING.html">Snap</a></nav>
+    </div>
+</header>
+<main class="doc-page"><article class="doc-article">
+<h1 id="packaging-native-installers">Packaging Native Installers</h1>
+<p>This project can be packaged as native desktop installers with <code>jpackage</code>, which is included with JDK 17 and later.</p>
+<p><code>jpackage</code> builds installers for the operating system it is running on. Build Ubuntu <code>.deb</code> packages on Ubuntu or another Debian-based Linux system. Build Windows <code>.exe</code> installers on Windows.</p>
+<p>For Snapcraft packaging and Snap Store publishing, see <a href="SNAP_PACKAGING.html">SNAP_PACKAGING.md</a>.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li>JDK 17 or later</li>
+<li>Maven 3.8 or later</li>
+<li>A successful Maven package build</li>
+</ul>
+<p>Build the runnable jar first:</p>
+<pre><code class="language-bash">
+mvn package
+</code></pre>
+<p>The jar should be created at:</p>
+<pre><code class="language-text">
+target/torus-election-gui-1.0.0.jar
+</code></pre>
+<h2 id="ubuntu-deb-installer-with-maven">Ubuntu <code>.deb</code> Installer With Maven</h2>
+<p>The POM includes <code>org.panteleyev:jpackage-maven-plugin</code> in the <code>linux-installer</code> profile. Build the <code>.deb</code> directly with Maven:</p>
+<pre><code class="language-bash">
+mvn clean package -Plinux-installer
+</code></pre>
+<p>The generated package is written to:</p>
+<pre><code class="language-text">
+target/installer/
+</code></pre>
+<p>Install the generated package:</p>
+<pre><code class="language-bash">
+sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+</code></pre>
+<p>The profile runs the same <code>jpackage</code> settings that are shown below, but keeps them in <code>pom.xml</code>.</p>
+<p>The installed launcher uses this icon:</p>
+<pre><code class="language-text">
+assets/icons/torus-election-gui.png
+</code></pre>
+<h2 id="ubuntu-deb-installer-with-jpackage">Ubuntu <code>.deb</code> Installer With <code>jpackage</code></h2>
+<p>Install the Linux packaging tools if needed:</p>
+<pre><code class="language-bash">
+sudo apt update
+sudo apt install fakeroot dpkg-dev
+</code></pre>
+<p>Create the installer:</p>
+<pre><code class="language-bash">
+mkdir -p target/installer
+
+jpackage \
+  --type deb \
+  --name torus-election-gui \
+  --app-version 1.0.0 \
+  --input target \
+  --main-jar torus-election-gui-1.0.0.jar \
+  --main-class Main \
+  --icon assets/icons/torus-election-gui.png \
+  --dest target/installer \
+  --linux-menu-group "Education" \
+  --linux-shortcut \
+  --linux-deb-maintainer "you@example.com" \
+  --add-modules java.desktop
+</code></pre>
+<p>Install the generated package:</p>
+<pre><code class="language-bash">
+sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+</code></pre>
+<p>Run the installed app from the desktop menu or from the terminal:</p>
+<pre><code class="language-bash">
+torus-election-gui
+</code></pre>
+<p>Uninstall it:</p>
+<pre><code class="language-bash">
+sudo apt remove torus-election-gui
+</code></pre>
+<p>Remove package configuration files too:</p>
+<pre><code class="language-bash">
+sudo apt purge torus-election-gui
+</code></pre>
+<p>The <code>.deb</code> includes a <code>postrm</code> purge hook. <code>apt purge</code> removes the default log directories for <code>/root</code> and <code>/home/*</code>:</p>
+<pre><code class="language-bash">
+~/.local/share/torus-election-gui
+</code></pre>
+<p>If a user ran the app with a custom <code>XDG_DATA_HOME</code>, delete that custom location manually if needed:</p>
+<pre><code class="language-bash">
+rm -rf "$XDG_DATA_HOME/torus-election-gui"
+</code></pre>
+<h2 id="windows-exe-installer">Windows <code>.exe</code> Installer</h2>
+<p>The POM includes a <code>windows-installer</code> profile. Run this on Windows with JDK 17 or later installed:</p>
+<pre><code class="language-powershell">
+mvn clean package -Pwindows-installer
+</code></pre>
+<p>The generated installer is written to:</p>
+<pre><code class="language-text">
+target\installer\
+</code></pre>
+<p>The installed launcher uses this icon:</p>
+<pre><code class="language-text">
+assets\icons\torus-election-gui.ico
+</code></pre>
+<p>Install it by running the generated <code>.exe</code>.</p>
+<p>Uninstall it from Windows:</p>
+<pre><code class="language-text">
+Settings -&gt; Apps -&gt; Installed apps -&gt; TorusElectionGUI -&gt; Uninstall
+</code></pre>
+<p>Or from Control Panel:</p>
+<pre><code class="language-text">
+Control Panel -&gt; Programs -&gt; Programs and Features -&gt; TorusElectionGUI -&gt; Uninstall
+</code></pre>
+<p>Application logs are user data and are not removed automatically. Delete them manually if needed:</p>
+<pre><code class="language-powershell">
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\torus-election-gui"
+</code></pre>
+<p>Windows installer notes:</p>
+<ul>
+<li>Build the <code>.exe</code> on Windows. <code>jpackage</code> cannot create a Windows installer from Linux.</li>
+<li>Install WiX Toolset if your JDK/jpackage setup requires it for <code>.exe</code> generation.</li>
+<li>The Maven profile requests Start Menu and desktop shortcuts.</li>
+<li>The Maven profile requests per-user installation and an installation-directory chooser.</li>
+</ul>
+<h2 id="windows-exe-installer-with-jpackage">Windows <code>.exe</code> Installer With <code>jpackage</code></h2>
+<p>Run these manual commands on Windows with JDK 17 or later installed:</p>
+<pre><code class="language-powershell">
+mvn package
+mkdir target\installer
+
+jpackage `
+  --type exe `
+  --name TorusElectionGUI `
+  --app-version 1.0.0 `
+  --input target `
+  --main-jar torus-election-gui-1.0.0.jar `
+  --main-class Main `
+  --icon assets\icons\torus-election-gui.ico `
+  --dest target\installer `
+  --win-menu `
+  --win-menu-group "Torus Election GUI" `
+  --win-shortcut `
+  --win-dir-chooser `
+  --win-per-user-install `
+  --add-modules java.desktop
+</code></pre>
+<p>The installer should be created under:</p>
+<pre><code class="language-text">
+target\installer\
+</code></pre>
+<p>Install it by running the generated <code>.exe</code>.</p>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The app uses Swing, so <code>java.desktop</code> is required.</li>
+<li>Lombok is compile-time only and is not needed by the installed application.</li>
+<li>Linux runtime logs are written to <code>~/.local/share/torus-election-gui/logs/torus-election-gui.log</code>, or to <code>$XDG_DATA_HOME/torus-election-gui/logs/torus-election-gui.log</code> when <code>XDG_DATA_HOME</code> is set.</li>
+<li>The Linux <code>.deb</code> purge script removes only the default <code>~/.local/share/torus-election-gui</code> paths. Custom <code>XDG_DATA_HOME</code> paths must be removed manually.</li>
+<li>Windows runtime logs are written to <code>%LOCALAPPDATA%\torus-election-gui\logs\torus-election-gui.log</code>.</li>
+<li>If <code>jpackage</code> is not found, check that your <code>JAVA_HOME</code> points to a JDK, not a JRE, and that the JDK <code>bin</code> directory is on <code>PATH</code>.</li>
+<li>If <code>.deb</code> generation fails because of missing tools, install <code>fakeroot</code> and <code>dpkg-dev</code>.</li>
+</ul>
+</article></main>
+<footer class="footer"><span>Last updated May 10, 2026.</span></footer>
+</body>
+</html>

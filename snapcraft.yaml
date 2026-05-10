@@ -1,0 +1,52 @@
+name: torus-election-gui
+title: Torus Election GUI
+version: "1.0.0"
+summary: Visualize leader election in a two-dimensional torus network.
+description: |
+  Torus Election GUI is a Java Swing desktop application for visualizing
+  leader election in a two-dimensional torus network. It supports immediate
+  execution and animated message propagation.
+
+base: core24
+grade: stable
+confinement: strict
+license: Proprietary
+icon: assets/icons/torus-election-gui.png
+
+wbsite:
+  - httpes://example.com/torus-election-gui
+source-code:
+  - https://example.com/torus-election-gui/source
+issues:
+  - https://example.com/torus-election-gui/issues
+contact:
+  - neimat.soliman.ismail@gmail.com
+
+apps:
+  torus-election-gui:
+    command: bin/torus-election-gui
+    desktop: snap/gui/torus-election-gui.desktop
+    plugs:
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - home
+    environment:
+      XDG_DATA_HOME: "$SNAP_USER_DATA/.local/share"
+
+parts:
+  torus-election-gui:
+    plugin: nil
+    source: .
+    build-packages:
+      - maven
+      - openjdk-17-jdk-headless
+    stage-packages:
+      - openjdk-17-jre
+    override-build: |
+      mvn -DskipTests package
+      mkdir -p "$CRAFT_PART_INSTALL/jar" "$CRAFT_PART_INSTALL/bin"
+      cp target/torus-election-gui-1.0.0.jar "$CRAFT_PART_INSTALL/jar/"
+      cp snap/local/torus-election-gui "$CRAFT_PART_INSTALL/bin/"
+      chmod 755 "$CRAFT_PART_INSTALL/bin/torus-election-gui"

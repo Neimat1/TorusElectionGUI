@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Java Swing visualization for leader election in a two-dimensional torus network.">
+    <title>Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand">
+                <img src="assets/torus-election-gui.png" alt="">
+                <span>Torus Election GUI</span>
+            </div>
+            <nav class="nav" aria-label="Main navigation">
+                <a href="#run">Run</a>
+                <a href="#package">Package</a>
+                <a href="#docs">Docs</a>
+                <a href="https://github.com/neimat-soliman/TorusElectionGUI" rel="noreferrer">GitHub</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-inner">
+                <div>
+                    <h1>Torus Election GUI</h1>
+                    <p>
+                        A Java Swing desktop application for visualizing leader election
+                        in a two-dimensional torus network with immediate execution,
+                        animated message propagation, packaged installers, and persistent logs.
+                    </p>
+                    <div class="actions">
+                        <a class="button primary" href="#run">Run the app</a>
+                        <a class="button secondary" href="PROJECT_DOCUMENTATION.html">Read architecture</a>
+                    </div>
+                </div>
+                <div class="visual" aria-hidden="true">
+                    <img src="assets/torus-election-gui.png" alt="">
+                </div>
+            </div>
+        </section>
+
+        <div class="content">
+            <section class="section">
+                <h2>What It Does</h2>
+                <div class="grid">
+                    <article class="card">
+                        <h3>Configurable Torus</h3>
+                        <p>Choose rows and columns, then enter unique process IDs for each grid cell.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Leader Election</h3>
+                        <p>Each process propagates its maximum known ID until the global leader is found.</p>
+                    </article>
+                    <article class="card">
+                        <h3>Animation And Logs</h3>
+                        <p>Replay message exchanges step by step and keep persistent per-user log files.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section id="run" class="section">
+                <h2>Run</h2>
+                <div class="commands">
+                    <div class="command">
+                        <h3>Compile</h3>
+                        <pre><code>mvn compile</code></pre>
+                    </div>
+                    <div class="command">
+                        <h3>Run From Classes</h3>
+                        <pre><code>mvn compile
+java -cp target/classes Main</code></pre>
+                    </div>
+                    <div class="command">
+                        <h3>Run Jar</h3>
+                        <pre><code>mvn package
+java -jar target/torus-election-gui-1.0.0.jar</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section id="package" class="section">
+                <h2>Package</h2>
+                <div class="commands">
+                    <div class="command">
+                        <h3>Ubuntu .deb</h3>
+                        <pre><code>mvn clean package -Plinux-installer
+sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb</code></pre>
+                    </div>
+                    <div class="command">
+                        <h3>Windows .exe</h3>
+                        <pre><code>mvn clean package -Pwindows-installer</code></pre>
+                    </div>
+                    <div class="command">
+                        <h3>Snap</h3>
+                        <pre><code>sudo snap install snapcraft --classic
+snapcraft</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section">
+                <h2>Logs</h2>
+                <div class="grid">
+                    <article class="card">
+                        <h3>Linux</h3>
+                        <p><code>~/.local/share/torus-election-gui/logs/torus-election-gui.log</code></p>
+                    </article>
+                    <article class="card">
+                        <h3>Windows</h3>
+                        <p><code>%LOCALAPPDATA%\torus-election-gui\logs\torus-election-gui.log</code></p>
+                    </article>
+                    <article class="card">
+                        <h3>Snap</h3>
+                        <p><code>~/snap/torus-election-gui/current/.local/share/torus-election-gui/logs/torus-election-gui.log</code></p>
+                    </article>
+                </div>
+            </section>
+
+            <section id="docs" class="section">
+                <h2>Documentation</h2>
+                <div class="doc-list">
+                    <a class="doc-link" href="RUNNING.html">
+                        <strong>Running</strong>
+                        <span>First-time setup, compile, run, and IDE notes.</span>
+                    </a>
+                    <a class="doc-link" href="PACKAGING.html">
+                        <strong>Packaging</strong>
+                        <span>Ubuntu .deb, Windows .exe, icons, install, and uninstall.</span>
+                    </a>
+                    <a class="doc-link" href="SNAP_PACKAGING.html">
+                        <strong>Snap</strong>
+                        <span>Snapcraft build, install, remove, license, and publishing notes.</span>
+                    </a>
+                    <a class="doc-link" href="PROJECT_DOCUMENTATION.html">
+                        <strong>Architecture</strong>
+                        <span>Component responsibilities, validation, data flow, and maintenance.</span>
+                    </a>
+                    <a class="doc-link" href="METHOD_SPECIFICATIONS.html">
+                        <strong>Method Specs</strong>
+                        <span>Method-level contracts, parameters, returns, and side effects.</span>
+                    </a>
+                    <a class="doc-link" href="PERFORMANCE_SOLID_MEMORY.html">
+                        <strong>Performance</strong>
+                        <span>Performance, SOLID, and memory notes.</span>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <span>Last updated May 10, 2026. Built for GitHub Pages from the repository docs folder.</span>
+    </footer>
+</div>
+</body>
+</html>
