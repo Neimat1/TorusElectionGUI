@@ -20,25 +20,53 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TorusElectionGUI extends JFrame {
+    private static final int ANIMATION_STEP_DELAY_MS = 1000;
+    private static final Color SURFACE = Color.WHITE;
+    private static final Color PAGE_BACKGROUND = new Color(245, 248, 252);
+    private static final Color PANEL_BORDER = new Color(215, 225, 235);
+    private static final Color BUTTON_BACKGROUND = new Color(243, 247, 251);
+    private static final Color BUTTON_BORDER = new Color(196, 210, 226);
+    private static final Color BUTTON_TEXT = new Color(19, 32, 51);
+    private static final Color LOG_CARET = new Color(127, 199, 255);
+    private static final Color LEGEND_TEXT = new Color(70, 88, 120);
+    private static final Color SIDEBAR_BACKGROUND = new Color(15, 35, 65);
+    private static final Color RUNNING_STATUS_COLOR = new Color(220, 120, 0);
+    private static final Color COMPLETED_STATUS_COLOR = new Color(0, 130, 0);
+    private static final Color PROCESS_FILL = new Color(230, 245, 255);
+    private static final Color PROCESS_BORDER = new Color(0, 120, 255);
+    private static final Color SENDER_FILL = new Color(255, 220, 120);
+    private static final Color SENDER_BORDER = new Color(230, 140, 0);
+    private static final Color RECEIVER_FILL = new Color(255, 160, 160);
+    private static final Color RECEIVER_BORDER = new Color(200, 60, 60);
+    private static final Color LEADER_FILL = new Color(170, 235, 170);
+    private static final Color LEADER_BORDER = new Color(0, 140, 0);
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm:ss a");
+
     private final JSpinner rowsSpinner = new JSpinner(new SpinnerNumberModel(4, 2, 8, 1));
     private final JSpinner colsSpinner = new JSpinner(new SpinnerNumberModel(4, 2, 8, 1));
     private final JTextField totalProcessesField = new JTextField("16");
     private final JTextArea idsArea = new JTextArea(
             "12 5 33 8\n" +
-            "17 40 2 29\n" +
-            "11 6 55 21\n" +
-            "9 14 31 25"
+                    "17 40 2 29\n" +
+                    "11 6 55 21\n" +
+                    "9 14 31 25"
     );
 
     private final JLabel statusValue = new JLabel("Not Started");
@@ -74,7 +102,7 @@ public class TorusElectionGUI extends JFrame {
     private JPanel createSideBar() {
         JPanel sideBar = new JPanel();
         sideBar.setPreferredSize(new Dimension(190, 800));
-        sideBar.setBackground(new Color(15, 35, 65));
+        sideBar.setBackground(SIDEBAR_BACKGROUND);
         sideBar.setLayout(new BoxLayout(sideBar, BoxLayout.Y_AXIS));
 
         JLabel title = new JLabel("<html><br><b>Torus Election</b><br>Distributed Systems</html>");
@@ -104,7 +132,7 @@ public class TorusElectionGUI extends JFrame {
     private JPanel createMainContent() {
         JPanel main = new JPanel(new BorderLayout(8, 8));
         main.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        main.setBackground(new Color(245, 248, 252));
+        main.setBackground(PAGE_BACKGROUND);
 
         JPanel top = new JPanel(new BorderLayout(8, 8));
         top.setOpaque(false);
@@ -132,63 +160,97 @@ public class TorusElectionGUI extends JFrame {
     }
 
     private JPanel createConfigPanel() {
-        JPanel panel = card("1. Network Configuration");
-        panel.setLayout(new GridLayout(4, 2, 8, 8));
+        JPanel panel = smoothCard("Network Configuration");
+
+        JPanel gridPanel = new JPanel(new GridLayout(4, 2, 8, 8));
+        gridPanel.setOpaque(false);
+
         totalProcessesField.setEditable(false);
-        panel.add(new JLabel("Rows:"));
-        panel.add(rowsSpinner);
-        panel.add(new JLabel("Columns:"));
-        panel.add(colsSpinner);
-        panel.add(new JLabel("Total Processes:"));
-        panel.add(totalProcessesField);
+        totalProcessesField.setForeground(BUTTON_TEXT);
+        totalProcessesField.setBackground(BUTTON_BACKGROUND);
+        totalProcessesField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BUTTON_BORDER),
+                BorderFactory.createEmptyBorder(4, 12, 4, 12)
+        ));
+        gridPanel.add(new JLabel("Rows:"));
+        gridPanel.add(rowsSpinner);
+        gridPanel.add(new JLabel("Columns:"));
+        gridPanel.add(colsSpinner);
+        gridPanel.add(new JLabel("Total Processes:"));
+        gridPanel.add(totalProcessesField);
+        panel.add(gridPanel, BorderLayout.CENTER);
+
         return panel;
     }
 
     private JPanel createIdsPanel() {
-        JPanel panel = card("2. Enter Process IDs");
-        panel.setLayout(new BorderLayout(8, 8));
+        JPanel panel = smoothCard("Enter Process IDs");
+
+        idsArea.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         idsArea.setFont(new Font("Consolas", Font.PLAIN, 15));
-        panel.add(new JScrollPane(idsArea), BorderLayout.CENTER);
+        idsArea.setForeground(BUTTON_TEXT);
+        idsArea.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+
+        JScrollPane scrollPane = new JScrollPane(idsArea);
+        scrollPane.setBorder(BorderFactory.createLineBorder(BUTTON_BORDER));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
         JLabel hint = new JLabel("<html>Enter IDs row-wise, separated by spaces or new lines.</html>");
         hint.setForeground(Color.GRAY);
         panel.add(hint, BorderLayout.SOUTH);
+
         return panel;
     }
-
     private JPanel createVisualizationPanel() {
-        JPanel panel = card("3. Torus Network Visualization");
-        panel.setLayout(new BorderLayout());
-        panel.add(gridPanel, BorderLayout.CENTER);
+        JPanel panel = smoothCard("Torus Network Visualization");
+        JPanel boardPanel = new JPanel(new BorderLayout());
+
+        boardPanel.add(gridPanel, BorderLayout.CENTER);
+        panel.add(boardPanel, BorderLayout.CENTER);
         return panel;
     }
 
     private JPanel createStatusPanel() {
-        JPanel panel = card("4. Election Status");
-        panel.setLayout(new GridLayout(7, 2, 8, 8));
-        panel.add(new JLabel("Status:")); panel.add(statusValue);
-        panel.add(new JLabel("Leader ID:")); panel.add(leaderIdValue);
-        panel.add(new JLabel("Leader Position:")); panel.add(leaderPositionValue);
-        panel.add(new JLabel("Rounds:")); panel.add(roundsValue);
-        panel.add(new JLabel("Messages Exchanged:")); panel.add(messagesValue);
-        panel.add(new JLabel("Start Time:")); panel.add(startTimeValue);
-        panel.add(new JLabel("End Time:")); panel.add(endTimeValue);
+
+
+        JPanel panel = smoothCard("Election Status");
+
+        JPanel gridPanel = new JPanel(new GridLayout(7, 2, 8, 8));
+        gridPanel.setOpaque(false);
+        gridPanel.add(new JLabel("Status:")); gridPanel.add(statusValue);
+        gridPanel.add(new JLabel("Leader ID:")); gridPanel.add(leaderIdValue);
+        gridPanel.add(new JLabel("Leader Position:")); gridPanel.add(leaderPositionValue);
+        gridPanel.add(new JLabel("Rounds:")); gridPanel.add(roundsValue);
+        gridPanel.add(new JLabel("Messages Exchanged:")); gridPanel.add(messagesValue);
+        gridPanel.add(new JLabel("Start Time:")); gridPanel.add(startTimeValue);
+        gridPanel.add(new JLabel("End Time:")); gridPanel.add(endTimeValue);
+        panel.add(gridPanel);
         return panel;
     }
 
+
+
+
     private JPanel createLegendPanel() {
-        JPanel panel = card("5. Legend");
-        panel.setLayout(new GridLayout(4, 2, 8, 8));
-        panel.add(colorBox(new Color(230, 245, 255))); panel.add(new JLabel("Process"));
-        panel.add(colorBox(new Color(255, 220, 120))); panel.add(new JLabel("Sender"));
-        panel.add(colorBox(new Color(255, 160, 160))); panel.add(new JLabel("Receiver"));
-        panel.add(colorBox(new Color(170, 235, 170))); panel.add(new JLabel("Leader"));
+        JPanel panel = smoothCard("Legend");
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(legendRow(PROCESS_FILL, PROCESS_BORDER, "Process"));
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(legendRow(SENDER_FILL, SENDER_BORDER, "Sender"));
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(legendRow(RECEIVER_FILL, RECEIVER_BORDER, "Receiver"));
+        panel.add(Box.createVerticalStrut(8));
+        panel.add(legendRow(LEADER_FILL, LEADER_BORDER, "Leader"));
         return panel;
     }
 
     private JPanel createControlsPanel() {
-        JPanel panel = card("6. Controls");
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
+        JPanel panel = smoothCard("Controls");
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
+        buttonPanel.setOpaque(false);
         JButton runButton = new JButton("Run Election");
         JButton animateButton = new JButton("Auto Animate");
         JButton resetButton = new JButton("Reset");
@@ -201,48 +263,150 @@ public class TorusElectionGUI extends JFrame {
         animateButton.addActionListener(e -> runElectionWithAnimation());
         resetButton.addActionListener(e -> reset());
 
-        panel.add(Box.createVerticalStrut(18));
-        panel.add(runButton);
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(animateButton);
-        panel.add(Box.createVerticalStrut(30));
-        panel.add(resetButton);
+        buttonPanel.add(Box.createVerticalStrut(14));
+        buttonPanel.add(runButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(animateButton);
+        buttonPanel.add(Box.createVerticalStrut(10));
+        buttonPanel.add(resetButton);
+
+        panel.add(buttonPanel, BorderLayout.CENTER);
         return panel;
     }
 
     private void styleButton(JButton button) {
         button.setAlignmentX(CENTER_ALIGNMENT);
-        button.setMaximumSize(new Dimension(230, 44));
-        button.setPreferredSize(new Dimension(230, 44));
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        button.setPreferredSize(new Dimension(230, 40));
         button.setFont(new Font("Arial", Font.BOLD, 13));
+        button.setForeground(BUTTON_TEXT);
+        button.setBackground(BUTTON_BACKGROUND);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BUTTON_BORDER),
+                BorderFactory.createEmptyBorder(4, 12, 4, 12)
+        ));
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(true);
+        button.setOpaque(true);
+        button.setMargin(new Insets(4, 12, 4, 12));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     private JPanel createLogPanel() {
-        JPanel panel = card("7. Execution Log");
+        JPanel panel = smoothCard("Execution Log");
         panel.setPreferredSize(new Dimension(1000, 170));
-        panel.setLayout(new BorderLayout());
+
+
         logArea.setEditable(false);
-        logArea.setFont(new Font("Consolas", Font.PLAIN, 13));
-        panel.add(new JScrollPane(logArea), BorderLayout.CENTER);
+
+        logArea.setCaretColor(LOG_CARET);
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
+       // logArea.setMargin(new Insets(12, 14, 12, 14));
+
+        logArea.setFont(new Font("Consolas", Font.PLAIN, 15));
+        logArea.setBackground(BUTTON_BACKGROUND);
+        logArea.setForeground(BUTTON_TEXT);
+        logArea.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+
+        JScrollPane scrollPane = new JScrollPane(logArea);
+        scrollPane.setBorder(BorderFactory.createLineBorder(BUTTON_BORDER));
+        scrollPane.getViewport().setBackground(BUTTON_BACKGROUND);
+        panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
 
-    private JPanel card(String title) {
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(215, 225, 235)),
-                BorderFactory.createTitledBorder(title)
-        ));
+    private JPanel smoothCard(String titlePanel) {
+        RoundedPanel panel = new RoundedPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBackground(SURFACE);
+        panel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+
+        JLabel title = new JLabel(titlePanel);
+        title.setAlignmentX(LEFT_ALIGNMENT);
+        title.setFont(new Font("Arial", Font.BOLD, 13));
+        title.setForeground(Color.BLACK);
+        title.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+        panel.add(title, BorderLayout.NORTH);
         return panel;
     }
 
-    private JLabel colorBox(Color color) {
-        JLabel label = new JLabel();
-        label.setOpaque(true);
-        label.setBackground(color);
-        label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        return label;
+    private JPanel legendRow(Color fill, Color border, String text) {
+        JPanel row = new JPanel();
+        row.setOpaque(false);
+        row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+        row.setAlignmentX(LEFT_ALIGNMENT);
+        row.setMaximumSize(new Dimension(220, 22));
+
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Arial", Font.PLAIN, 13));
+        label.setForeground(LEGEND_TEXT);
+
+        row.add(new RoundedSwatch(fill, border));
+        row.add(Box.createHorizontalStrut(10));
+        row.add(label);
+        return row;
+    }
+
+    private static class RoundedSwatch extends JPanel {
+        private final Color fill;
+        private final Color border;
+
+        RoundedSwatch(Color fill, Color border) {
+            this.fill = fill;
+            this.border = border;
+            setOpaque(false);
+            setPreferredSize(new Dimension(18, 18));
+            setMaximumSize(new Dimension(18, 18));
+            setMinimumSize(new Dimension(18, 18));
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(fill);
+            g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 5, 5);
+            g2.setColor(border);
+            g2.drawRoundRect(1, 1, getWidth() - 3, getHeight() - 3, 5, 5);
+            g2.dispose();
+        }
+    }
+
+    private static class RoundedPanel extends JPanel {
+        private static final int ARC_SIZE = 15;
+        private static final int BORDER_WIDTH = 1;
+        private static final BasicStroke BORDER_STROKE = new BasicStroke(BORDER_WIDTH);
+
+        RoundedPanel() {
+            setOpaque(false);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Draw rounded filled background
+            g2.setColor(getBackground());
+            g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, ARC_SIZE, ARC_SIZE);
+
+            // Draw rounded border
+            g2.setColor(PANEL_BORDER);
+            g2.setStroke(BORDER_STROKE);
+            g2.drawRoundRect(BORDER_WIDTH / 2, BORDER_WIDTH / 2,
+                    getWidth() - BORDER_WIDTH - 1, getHeight() - BORDER_WIDTH - 1,
+                    ARC_SIZE, ARC_SIZE);
+
+            g2.dispose();
+        }
+
+        @Override
+        public void paintBorder(Graphics g) {
+            // Override to prevent default border painting
+        }
     }
 
     private void updateTotalProcesses() {
@@ -287,7 +451,7 @@ public class TorusElectionGUI extends JFrame {
 
             startTimeValue.setText(currentTime());
             statusValue.setText("Running Animation...");
-            statusValue.setForeground(new Color(220, 120, 0));
+            statusValue.setForeground(RUNNING_STATUS_COLOR);
 
             currentNetwork = new TorusNetwork(rows, cols, ids);
             TorusElectionAlgorithm election = new TorusElectionAlgorithm(currentNetwork);
@@ -338,7 +502,7 @@ public class TorusElectionGUI extends JFrame {
                                 + (step.isUpdated() ? "  UPDATED\n" : "\n"));
                         logArea.setCaretPosition(logArea.getDocument().getLength());
                     });
-                    Thread.sleep(250);
+                    Thread.sleep(ANIMATION_STEP_DELAY_MS);
                 }
 
                 SwingUtilities.invokeLater(() -> {
@@ -370,13 +534,13 @@ public class TorusElectionGUI extends JFrame {
 
     private void updateStatus(TorusNetwork network, TorusElectionAlgorithm election) {
         statusValue.setText("Completed");
-        statusValue.setForeground(new Color(0, 130, 0));
+        statusValue.setForeground(COMPLETED_STATUS_COLOR);
         for (ProcessNode node : network.getAllNodes()) {
             if (node.isLeader()) {
                 leaderIdValue.setText(String.valueOf(node.getId()));
-                leaderIdValue.setForeground(new Color(0, 130, 0));
+                leaderIdValue.setForeground(COMPLETED_STATUS_COLOR);
                 leaderPositionValue.setText(node.getPosition().toString());
-                leaderPositionValue.setForeground(new Color(0, 130, 0));
+                leaderPositionValue.setForeground(COMPLETED_STATUS_COLOR);
             }
         }
         roundsValue.setText(String.valueOf(election.getRounds()));
@@ -428,6 +592,6 @@ public class TorusElectionGUI extends JFrame {
     }
 
     private String currentTime() {
-        return LocalTime.now().format(DateTimeFormatter.ofPattern("hh:mm:ss a"));
+        return LocalTime.now().format(TIME_FORMATTER);
     }
 }

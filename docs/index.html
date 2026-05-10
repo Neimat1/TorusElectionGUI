@@ -20,7 +20,7 @@
                 <a href="#run">Run</a>
                 <a href="#package">Package</a>
                 <a href="#docs">Docs</a>
-                <a href="https://github.com/neimat-soliman/TorusElectionGUI" rel="noreferrer">GitHub</a>
+                <a href="https://github.com/Neimat1/TorusElectionGUI" rel="noreferrer">GitHub</a>
             </nav>
         </div>
     </header>
@@ -63,6 +63,108 @@
                         <p>Replay message exchanges step by step and keep persistent per-user log files.</p>
                     </article>
                 </div>
+            </section>
+
+            <section id="prototype" class="section">
+                <h2>Current GUI Prototype</h2>
+                <div class="prototype-shell" aria-label="Static prototype preview of the desktop application">
+                    <aside class="prototype-sidebar">
+                        <strong>Torus Election</strong>
+                        <small>Distributed Systems</small>
+                        <span>Home</span>
+                        <span>Input</span>
+                        <span>Run Election</span>
+                        <span>Visualization</span>
+                        <span>Results</span>
+                        <span>About</span>
+                    </aside>
+                    <div class="prototype-main">
+                        <div class="prototype-left">
+                            <div class="prototype-panel">
+                                <h3>Network Configuration</h3>
+                                <div class="prototype-form">
+                                    <span>Rows:</span><span class="prototype-input">4</span>
+                                    <span>Columns:</span><span class="prototype-input">4</span>
+                                    <span>Total Processes:</span><span class="prototype-input">16</span>
+                                </div>
+                            </div>
+                            <div class="prototype-panel">
+                                <h3>Enter Process IDs</h3>
+                                <div class="prototype-textarea">12 5 33 8
+17 40 2 29
+11 6 55 21
+9 14 31 25</div>
+                                <p>Enter IDs row-wise, separated by spaces or new lines.</p>
+                            </div>
+                        </div>
+                        <div class="prototype-panel prototype-visual-card">
+                            <h3>Torus Network Visualization</h3>
+                            <div class="prototype-board">
+                                <div class="phase-arrow horizontal">Round 2</div>
+                                <div class="phase-arrow vertical">max=55</div>
+                                <div class="node">12</div>
+                                <div class="node">5</div>
+                                <div class="node sender">33</div>
+                                <div class="node">8</div>
+                                <div class="node">17</div>
+                                <div class="node">40</div>
+                                <div class="node">2</div>
+                                <div class="node">29</div>
+                                <div class="node">11</div>
+                                <div class="node">6</div>
+                                <div class="node leader">55</div>
+                                <div class="node">21</div>
+                                <div class="node">9</div>
+                                <div class="node">14</div>
+                                <div class="node">31</div>
+                                <div class="node receiver">25</div>
+                            </div>
+                            <div class="prototype-board-footer">
+                                <span>Last row connects back to first row</span>
+                                <span>Last column connects back to first column</span>
+                            </div>
+                        </div>
+                        <div class="prototype-right">
+                            <div class="prototype-panel">
+                                <h3>Election Status</h3>
+                                <div class="prototype-status">
+                                    <span>Status:</span><strong>Completed</strong>
+                                    <span>Leader ID:</span><strong>55</strong>
+                                    <span>Leader Position:</span><strong>(2,2)</strong>
+                                    <span>Rounds:</span><strong>4</strong>
+                                    <span>Messages Exchanged:</span><strong>256</strong>
+                                    <span>Start Time:</span><strong>10:24:12</strong>
+                                    <span>End Time:</span><strong>10:24:18</strong>
+                                </div>
+                            </div>
+                            <div class="prototype-panel">
+                                <h3>Legend</h3>
+                                <div class="legend-row"><span class="legend-swatch process"></span><span>Process</span></div>
+                                <div class="legend-row"><span class="legend-swatch sender"></span><span>Sender</span></div>
+                                <div class="legend-row"><span class="legend-swatch receiver"></span><span>Receiver</span></div>
+                                <div class="legend-row"><span class="legend-swatch leader"></span><span>Leader</span></div>
+                            </div>
+                            <div class="prototype-panel">
+                                <h3>Controls</h3>
+                                <span class="mini-button">Run Election</span>
+                                <span class="mini-button">Auto Animate</span>
+                                <span class="mini-button">Reset</span>
+                            </div>
+                        </div>
+                        <div class="prototype-panel prototype-log-card">
+                            <h3>Execution Log</h3>
+                            <div class="prototype-log">
+                                [10:24:12] New animated election run.<br>
+                                [Round 1] P33 -&gt; P8 sends max=33 UPDATED<br>
+                                [Round 2] P55 -&gt; P31 sends max=55 UPDATED<br>
+                                [10:24:18] Animation completed successfully.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="note">
+                    The red arrow marker represents one animation phase: the highlighted sender passes its current maximum-known ID to the highlighted receiver.
+                </p>
             </section>
 
             <section id="run" class="section">
@@ -120,6 +222,10 @@ snapcraft</code></pre>
                         <h3>Snap</h3>
                         <p><code>~/snap/torus-election-gui/current/.local/share/torus-election-gui/logs/torus-election-gui.log</code></p>
                     </article>
+                    <article class="card">
+                        <h3>Codex</h3>
+                        <p><a href="CODEX_LOG.html">Documentation and setup work log</a></p>
+                    </article>
                 </div>
             </section>
 
@@ -150,13 +256,18 @@ snapcraft</code></pre>
                         <strong>Performance</strong>
                         <span>Performance, SOLID, and memory notes.</span>
                     </a>
+                    <a class="doc-link" href="CODEX_LOG.html">
+                        <strong>Codex Log</strong>
+                        <span>Documentation and repository setup work completed with Codex assistance.</span>
+                    </a>
                 </div>
             </section>
         </div>
     </main>
 
     <footer class="footer">
-        <span>Last updated May 10, 2026. Built for GitHub Pages from the repository docs folder.</span>
+        <span>Last updated May 11, 2026. Built for GitHub Pages from the repository docs folder.</span>
+        <span>Powered by Neimat Soliman + Codex.</span>
     </footer>
 </div>
 </body>

@@ -16,64 +16,107 @@
 </header>
 <main class="doc-page"><article class="doc-article">
 <h1 id="performance-solid-and-memory-review">Performance, SOLID, And Memory Review</h1>
-<p>This document summarizes the current design choices and the changes made to reduce avoidable allocation, tighten encapsulation, and keep the code easier to maintain.</p>
-<h2 id="performance-updates">Performance Updates</h2>
-<h3 id="cached-network-collections">Cached Network Collections</h3>
-<p><code>TorusNetwork</code> now builds and stores:</p>
+<p>Last reviewed: May 11, 2026.</p>
+<p>This project is acceptable for the current desktop GUI scope. The GUI limits the network to <code>8 x 8</code>, so CPU and memory use are predictable. The core topology, algorithm, logging, and rendering code now avoid the main unnecessary allocations that existed earlier.</p>
+<h2 id="current-status">Current Status</h2>
+<table>
+<thead>
+<tr><th>Area</th><th>Status</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Performance</td><td>Meets current scope</td><td>Cached topology, reused render constants, and bounded GUI input keep runtime cost small.</td></tr>
+<tr><td>SOLID</td><td>Mostly meets current scope</td><td>Domain packages are separated well. The main remaining compromise is that <code>TorusElectionGUI</code> still owns UI construction, input parsing, command handling, and animation coordination.</td></tr>
+<tr><td>Memory</td><td>Meets current scope</td><td>Cached immutable lists reduce temporary allocation. Animation history is intentionally retained for replay and is bounded by the <code>8 x 8</code> GUI limit.</td></tr>
+</tbody>
+</table>
+<h2 id="changes-applied">Changes Applied</h2>
+<h3 id="network-topology">Network Topology</h3>
+<p><code>TorusNetwork</code> builds and stores:</p>
 <ul>
 <li>one row-major <code>allNodes</code> list</li>
 <li>one precomputed neighbor list per node</li>
 </ul>
-<p>Previously, <code>getAllNodes()</code> created a new list on each call, and <code>getNeighbors()</code> created a new list for each node lookup. The election loop calls these methods repeatedly, so caching removes unnecessary allocation and repeated topology work.</p>
-<h3 id="reused-rendering-constants">Reused Rendering Constants</h3>
-<p><code>TorusGridPanel</code> now uses static constants for repeated <code>Color</code>, <code>Font</code>, and <code>BasicStroke</code> values.</p>
-<p>This avoids creating new graphics helper objects during every repaint, which matters during animation because the panel repaints frequently.</p>
-<h3 id="single-node-list-in-election-loop">Single Node List In Election Loop</h3>
-<p><code>TorusElectionAlgorithm.electLeader()</code> now stores <code>network.getAllNodes()</code> in a local variable and reuses it through the run.</p>
-<p>This makes the loop intent clearer and avoids repeated method calls while preserving behavior.</p>
-<h2 id="solid-updates">SOLID Updates</h2>
-<h3 id="encapsulation">Encapsulation</h3>
-<p>The broad Lombok <code>@Getter</code> on <code>TorusNetwork</code> was removed because it generated <code>getNodes()</code>, exposing the internal two-dimensional node array. The class now exposes only the operations needed by callers:</p>
+<p><code>getAllNodes()</code> and <code>getNeighbors(...)</code> return unmodifiable cached lists. This removes repeated list allocation during election and animation while protecting internal collections from caller mutation.</p>
+<h3 id="election-algorithm">Election Algorithm</h3>
+<p><code>TorusElectionAlgorithm.electLeader()</code> now reuses the cached node list throughout the run, including the final maximum-ID lookup. It also clears previous run data and resets each node before a new election, making repeated runs safer.</p>
+<p>The algorithm exposes read-only views from:</p>
 <ul>
-<li><code>getRows()</code></li>
-<li><code>getCols()</code></li>
-<li><code>getNode(...)</code></li>
-<li><code>getAllNodes()</code></li>
-<li><code>getNeighbors(...)</code></li>
+<li><code>getAnimationSteps()</code></li>
+<li><code>getExecutionLog()</code></li>
 </ul>
-<p><code>TorusElectionAlgorithm</code> also returns read-only views for animation steps and execution logs. Callers can read run data without mutating algorithm-owned collections.</p>
-<h3 id="single-responsibility-boundaries">Single Responsibility Boundaries</h3>
-<p>The existing package split remains appropriate for this project size:</p>
+<p>This keeps callers from mutating algorithm-owned collections.</p>
+<h3 id="rendering">Rendering</h3>
+<p><code>TorusGridPanel</code> uses static constants for repeated <code>Color</code>, <code>Font</code>, and <code>BasicStroke</code> objects. This avoids recreating graphics helper objects during frequent repaint calls.</p>
+<p><code>TorusElectionGUI</code> now also reuses UI colors, status colors, legend colors, the rounded-panel border stroke, and the time formatter instead of constructing those repeatedly.</p>
+<h3 id="logging">Logging</h3>
+<p><code>AppLog.append(...)</code> still writes synchronously, which is acceptable because log volume is small. It now creates the log directory once per successful run instead of calling <code>Files.createDirectories(...)</code> on every log append.</p>
+<p>If a write fails, the logger resets the directory-ready flag and reports the error to <code>System.err</code>, so a later append can retry directory creation.</p>
+<h2 id="solid-review">SOLID Review</h2>
+<h3 id="single-responsibility">Single Responsibility</h3>
+<p>The package boundaries are reasonable:</p>
 <ul>
-<li><code>network</code> owns topology.</li>
-<li><code>algorithm</code> owns election state transitions.</li>
-<li><code>model</code> owns simple state objects.</li>
+<li><code>network</code> owns torus topology and neighbor lookup.</li>
+<li><code>algorithm</code> owns leader-election state transitions.</li>
+<li><code>model</code> owns small data/state objects.</li>
+<li><code>logging</code> owns persistent application log paths and writes.</li>
 <li><code>gui</code> owns Swing rendering and user workflow.</li>
 </ul>
-<p>The main remaining SOLID limitation is that <code>TorusElectionGUI</code> still coordinates UI construction, validation, command handling, and animation. For a larger application, the next improvement would be extracting input parsing and animation control into separate classes.</p>
-<h3 id="safer-algorithm-reuse">Safer Algorithm Reuse</h3>
-<p><code>ProcessNode</code> now has <code>resetElectionState()</code>, and <code>TorusElectionAlgorithm.electLeader()</code> resets node election state before every run.</p>
-<p>This makes repeated calls safer and reduces hidden coupling to the GUI's current habit of creating a fresh <code>TorusNetwork</code> for each run.</p>
-<h2 id="memory-updates">Memory Updates</h2>
-<h3 id="reduced-short-lived-objects">Reduced Short-Lived Objects</h3>
-<p>The main allocation reductions are:</p>
+<p>The main remaining improvement would be splitting <code>TorusElectionGUI</code> into smaller collaborators:</p>
 <ul>
-<li>no per-call list allocation in <code>getAllNodes()</code></li>
-<li>no per-call neighbor list allocation in <code>getNeighbors()</code></li>
-<li>no repeated paint-time allocation for common colors, fonts, and strokes</li>
+<li>an input parser/validator for rows, columns, and process IDs</li>
+<li>an animation controller for thread lifecycle</li>
+<li>a view builder for Swing layout</li>
 </ul>
-<h3 id="controlled-collection-mutation">Controlled Collection Mutation</h3>
-<p><code>TorusNetwork.getAllNodes()</code> and <code>TorusNetwork.getNeighbors(...)</code> return unmodifiable lists. <code>TorusElectionAlgorithm.getAnimationSteps()</code> and <code>getExecutionLog()</code> return unmodifiable views.</p>
-<p>This avoids accidental external mutation while still avoiding defensive copy allocation on every read.</p>
-<h3 id="current-memory-tradeoff">Current Memory Tradeoff</h3>
-<p>The network now keeps cached neighbor lists, which adds a small fixed memory cost per node. In exchange, animation and election runs avoid repeated temporary list allocation. With the GUI capped at <code>8 x 8</code>, the fixed cost is tiny and predictable.</p>
-<h2 id="remaining-practical-limits">Remaining Practical Limits</h2>
+<p>That refactor is not required for the current project size, but it would improve testability if the GUI grows.</p>
+<h3 id="open-closed">Open/Closed</h3>
+<p>The current algorithm is concrete and direct. If multiple election algorithms are added later, introduce a small interface such as <code>LeaderElectionAlgorithm</code> with methods for execution, logs, animation steps, rounds, and message count.</p>
+<h3 id="liskov-substitution">Liskov Substitution</h3>
+<p>The project does not currently rely on inheritance for domain behavior. This keeps Liskov risk low.</p>
+<h3 id="interface-segregation">Interface Segregation</h3>
+<p>There are no oversized public interfaces. Public APIs are small and task-specific.</p>
+<h3 id="dependency-inversion">Dependency Inversion</h3>
+<p>The GUI directly creates <code>TorusNetwork</code> and <code>TorusElectionAlgorithm</code>. This is fine for a small Swing application. If the app gains tests or multiple algorithm implementations, inject an algorithm factory into the GUI instead of constructing the algorithm directly.</p>
+<h2 id="performance-review">Performance Review</h2>
+<p>For a grid of <code>n = rows * cols</code>:</p>
 <ul>
-<li>The GUI limits the network to <code>8 x 8</code>, so algorithmic cost is small in normal use.</li>
-<li>Animation intentionally stores every message as an <code>AnimationStep</code>; this is necessary for replay. If the grid limit is raised significantly, consider streaming animation events or adding a "run without recording" mode.</li>
-<li>Swing work should remain on the Event Dispatch Thread. The animation thread already delegates UI updates through <code>SwingUtilities.invokeLater</code>.</li>
+<li>network construction is <code>O(n)</code></li>
+<li>each round processes four directed neighbor exchanges per node, so one round is <code>O(4n)</code>, effectively <code>O(n)</code></li>
+<li>memory for topology is <code>O(n)</code></li>
+<li>memory for animation is <code>O(steps)</code>, where <code>steps</code> is the number of recorded message exchanges</li>
 </ul>
+<p>The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. With the current <code>8 x 8</code> cap, this is acceptable.</p>
+<h2 id="memory-review">Memory Review</h2>
+<p>The project now reduces short-lived allocation by:</p>
+<ul>
+<li>caching node and neighbor lists</li>
+<li>returning unmodifiable views instead of defensive copies</li>
+<li>reusing render constants</li>
+<li>reusing the GUI time formatter</li>
+<li>avoiding repeated log-directory creation after the first successful write</li>
+</ul>
+<p>The main retained objects during a run are:</p>
+<ul>
+<li><code>ProcessNode</code> objects</li>
+<li>immutable <code>Position</code> objects</li>
+<li>cached neighbor lists</li>
+<li>execution log strings</li>
+<li>recorded <code>AnimationStep</code> objects</li>
+</ul>
+<p>This is appropriate for the current GUI cap.</p>
+<h2 id="remaining-tradeoffs">Remaining Tradeoffs</h2>
+<ul>
+<li><code>TorusElectionGUI</code> is still the largest class and mixes several responsibilities.</li>
+<li>Animation stores all steps before playback. This supports replay but would need redesign if much larger grids are allowed.</li>
+<li>Logging is synchronous. This keeps the code simple, but a future high-volume logger should use buffering or a background writer.</li>
+<li>There are no automated tests in the repository yet. Adding unit tests for <code>TorusNetwork</code>, <code>TorusElectionAlgorithm</code>, and <code>AppLog</code> would make future refactors safer.</li>
+</ul>
+<h2 id="verification">Verification</h2>
+<p>The project was compiled after the latest updates:</p>
+<pre><code class="language-bash">
+mvn compile
+</code></pre>
+<p>Result: build successful.</p>
 </article></main>
-<footer class="footer"><span>Last updated May 10, 2026.</span></footer>
+<footer class="footer"><span>Last updated May 11, 2026.</span><span>Powered by Neimat Soliman + Codex.</span></footer>
 </body>
 </html>
