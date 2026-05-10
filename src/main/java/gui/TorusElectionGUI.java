@@ -453,10 +453,11 @@ public class TorusElectionGUI extends JFrame {
             statusValue.setText("Running Animation...");
             statusValue.setForeground(RUNNING_STATUS_COLOR);
 
-            currentNetwork = new TorusNetwork(rows, cols, ids);
-            TorusElectionAlgorithm election = new TorusElectionAlgorithm(currentNetwork);
+            TorusNetwork electionNetwork = new TorusNetwork(rows, cols, ids);
+            TorusElectionAlgorithm election = new TorusElectionAlgorithm(electionNetwork);
             election.electLeader();
 
+            currentNetwork = new TorusNetwork(rows, cols, ids);
             gridPanel.setNetwork(currentNetwork);
             animateElection(election);
         } catch (Exception ex) {
@@ -495,6 +496,9 @@ public class TorusElectionGUI extends JFrame {
                         if (!animationRunning) {
                             return;
                         }
+                        if (step.isUpdated()) {
+                            currentNetwork.getNode(step.getReceiverPosition()).updateMaxKnownId(step.getTransmittedValue());
+                        }
                         gridPanel.setActiveStep(step);
                         appendLog("[Round " + step.getRound() + "] P" + step.getSenderId()
                                 + " -> P" + step.getReceiverId()
@@ -510,6 +514,7 @@ public class TorusElectionGUI extends JFrame {
                         return;
                     }
                     gridPanel.clearAnimation();
+                    markLeader(currentNetwork);
                     updateStatus(currentNetwork, election);
                     writeFinalLog(election);
                     appendLog("\n[" + currentTime() + "] Animation completed successfully.\n");
@@ -530,6 +535,16 @@ public class TorusElectionGUI extends JFrame {
         });
         animationThread.setDaemon(true);
         animationThread.start();
+    }
+
+    private void markLeader(TorusNetwork network) {
+        int leaderId = Integer.MIN_VALUE;
+        for (ProcessNode node : network.getAllNodes()) {
+            leaderId = Math.max(leaderId, node.getId());
+        }
+        for (ProcessNode node : network.getAllNodes()) {
+            node.setLeader(node.getId() == leaderId);
+        }
     }
 
     private void updateStatus(TorusNetwork network, TorusElectionAlgorithm election) {

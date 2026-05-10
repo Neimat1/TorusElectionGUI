@@ -84,7 +84,7 @@
 <li>memory for topology is <code>O(n)</code></li>
 <li>memory for animation is <code>O(steps)</code>, where <code>steps</code> is the number of recorded message exchanges</li>
 </ul>
-<p>The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. With the current <code>8 x 8</code> cap, this is acceptable.</p>
+<p>The animation step list is the largest intentional memory cost. It is needed so the GUI can replay every phase. Animated runs also create a fresh display network after computing the simulation steps, which keeps visible <code>maxKnownId</code> values step-accurate during replay. With the current <code>8 x 8</code> cap, this is acceptable.</p>
 <h2 id="memory-review">Memory Review</h2>
 <p>The project now reduces short-lived allocation by:</p>
 <ul>
@@ -101,21 +101,23 @@
 <li>cached neighbor lists</li>
 <li>execution log strings</li>
 <li>recorded <code>AnimationStep</code> objects</li>
+<li>a second short-lived display network during animated runs</li>
 </ul>
 <p>This is appropriate for the current GUI cap.</p>
+<h2 id="test-coverage">Test Coverage</h2>
+<p>The project now has a JUnit 5 suite and JaCoCo coverage reporting through <code>mvn test</code>. Coverage is strongest in the model, network, and algorithm layers, with a headless smoke test for <code>TorusGridPanel</code>. The full <code>TorusElectionGUI</code> window is not opened in unit tests because constructing the frame starts a visible Swing application; GUI workflow testing should be handled separately with a desktop-capable integration test if needed.</p>
 <h2 id="remaining-tradeoffs">Remaining Tradeoffs</h2>
 <ul>
 <li><code>TorusElectionGUI</code> is still the largest class and mixes several responsibilities.</li>
 <li>Animation stores all steps before playback. This supports replay but would need redesign if much larger grids are allowed.</li>
 <li>Logging is synchronous. This keeps the code simple, but a future high-volume logger should use buffering or a background writer.</li>
-<li>There are no automated tests in the repository yet. Adding unit tests for <code>TorusNetwork</code>, <code>TorusElectionAlgorithm</code>, and <code>AppLog</code> would make future refactors safer.</li>
 </ul>
 <h2 id="verification">Verification</h2>
-<p>The project was compiled after the latest updates:</p>
+<p>The project was tested after the latest updates:</p>
 <pre><code class="language-bash">
-mvn compile
+mvn test
 </code></pre>
-<p>Result: build successful.</p>
+<p>Result: 19 tests run, 0 failures, 0 errors. JaCoCo report generated.</p>
 </article></main>
 <footer class="footer"><span>Last updated May 11, 2026.</span><span>Powered by Neimat Soliman + Codex.</span></footer>
 </body>
