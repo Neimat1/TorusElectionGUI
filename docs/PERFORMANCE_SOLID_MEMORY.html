@@ -80,7 +80,7 @@
 <p>For a grid of <code>n = rows * cols</code>:</p>
 <ul>
 <li>network construction is <code>O(n)</code></li>
-<li>each round processes four directed neighbor exchanges per node, so one round is <code>O(4n)</code>, effectively <code>O(n)</code></li>
+<li>each round processes up to four unique neighbor reads per node, so one round is <code>O(4n)</code>, effectively <code>O(n)</code></li>
 <li>memory for topology is <code>O(n)</code></li>
 <li>memory for animation is <code>O(steps)</code>, where <code>steps</code> is the number of recorded message exchanges</li>
 </ul>

@@ -87,7 +87,7 @@ The GUI directly creates `TorusNetwork` and `TorusElectionAlgorithm`. This is fi
 For a grid of `n = rows * cols`:
 
 - network construction is `O(n)`
-- each round processes four directed neighbor exchanges per node, so one round is `O(4n)`, effectively `O(n)`
+- each round processes up to four unique neighbor reads per node, so one round is `O(4n)`, effectively `O(n)`
 - memory for topology is `O(n)`
 - memory for animation is `O(steps)`, where `steps` is the number of recorded message exchanges
 

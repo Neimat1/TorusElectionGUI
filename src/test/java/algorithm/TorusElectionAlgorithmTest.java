@@ -30,7 +30,7 @@ class TorusElectionAlgorithmTest {
         assertEquals(12, leader.getMaxKnownId());
         assertTrue(network.getAllNodes().stream().allMatch(node -> node.getMaxKnownId() == 12));
         assertEquals(2, algorithm.getRounds());
-        assertEquals(32, algorithm.getMessages());
+        assertEquals(16, algorithm.getMessages());
     }
 
     @Test

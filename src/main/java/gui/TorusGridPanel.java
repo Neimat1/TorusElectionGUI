@@ -92,11 +92,23 @@ public class TorusGridPanel extends JPanel {
     }
 
     private void drawEmpty(Graphics2D g2) {
+        String[] lines = {
+                "Click Run Election",
+                "or Auto Animate",
+                "to visualize the Torus Network"
+        };
         g2.setColor(EMPTY_TEXT);
         g2.setFont(EMPTY_FONT);
-        g2.drawString("Click Run Election ", 60, 240);
-        g2.drawString("or Auto Animate " ,60, 260);
-        g2.drawString("to visualize the Torus Network", 60, 280);
+        FontMetrics metrics = g2.getFontMetrics();
+        int lineGap = 8;
+        int totalHeight = lines.length * metrics.getHeight() + (lines.length - 1) * lineGap;
+        int y = Math.max(metrics.getAscent() + 20, (getHeight() - totalHeight) / 2 + metrics.getAscent());
+
+        for (String line : lines) {
+            int x = Math.max(20, (getWidth() - metrics.stringWidth(line)) / 2);
+            g2.drawString(line, x, y);
+            y += metrics.getHeight() + lineGap;
+        }
     }
 
     private Layout createLayout() {
