@@ -46,7 +46,7 @@ snapcraft
 <h2 id="install-locally">Install Locally</h2>
 <p>For a locally built strict snap:</p>
 <pre><code class="language-bash">
-sudo snap install ./torus-election-gui_1.0.0_amd64.snap --dangerous
+sudo snap install ./torus-election-gui_1.0.3_amd64.snap --dangerous
 </code></pre>
 <p>Run it:</p>
 <pre><code class="language-bash">
@@ -74,18 +74,11 @@ XDG_DATA_HOME=$SNAP_USER_DATA/.local/share
 ~/snap/torus-election-gui/current/.local/share/torus-election-gui/logs/torus-election-gui.log
 </code></pre>
 <h2 id="license">License</h2>
-<p>The current <code>snapcraft.yaml</code> uses:</p>
-<pre><code class="language-yaml">
-license: Proprietary
-</code></pre>
-<p>This is deliberate because the repository does not currently include an open-source <code>LICENSE</code> file. If you want the app to be open source, add a real <code>LICENSE</code> file and change the snap metadata to an SPDX license expression such as:</p>
+<p>The snap is published under the same open-source license as the repository:</p>
 <pre><code class="language-yaml">
 license: MIT
 </code></pre>
-<p>or:</p>
-<pre><code class="language-yaml">
-license: Apache-2.0
-</code></pre>
+<p>The root <code>LICENSE</code> file contains the MIT License text so GitHub and Snapcraft can both identify the license correctly.</p>
 <h2 id="links">Links</h2>
 <p>The snap metadata supports these link fields:</p>
 <ul>
@@ -109,7 +102,7 @@ snapcraft register torus-election-gui
 </code></pre>
 <p>Upload the built snap:</p>
 <pre><code class="language-bash">
-snapcraft upload torus-election-gui_1.0.0_amd64.snap --release=edge
+snapcraft upload torus-election-gui_1.0.3_amd64.snap --release=edge
 </code></pre>
 <p>Promote to stable after testing:</p>
 <pre><code class="language-bash">

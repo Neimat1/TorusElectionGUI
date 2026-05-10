@@ -31,7 +31,7 @@ mvn package
 </code></pre>
 <p>The jar should be created at:</p>
 <pre><code class="language-text">
-target/torus-election-gui-1.0.0.jar
+target/torus-election-gui-1.0.3.jar
 </code></pre>
 <h2 id="ubuntu-deb-installer-with-maven">Ubuntu <code>.deb</code> Installer With Maven</h2>
 <p>The POM includes <code>org.panteleyev:jpackage-maven-plugin</code> in the <code>linux-installer</code> profile. Build the <code>.deb</code> directly with Maven:</p>
@@ -44,7 +44,7 @@ target/installer/
 </code></pre>
 <p>Install the generated package:</p>
 <pre><code class="language-bash">
-sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+sudo apt install ./target/installer/torus-election-gui_1.0.3-1_amd64.deb
 </code></pre>
 <p>The profile runs the same <code>jpackage</code> settings that are shown below, but keeps them in <code>pom.xml</code>.</p>
 <p>The installed launcher uses this icon:</p>
@@ -64,9 +64,9 @@ mkdir -p target/installer
 jpackage \
   --type deb \
   --name torus-election-gui \
-  --app-version 1.0.0 \
+  --app-version 1.0.3 \
   --input target \
-  --main-jar torus-election-gui-1.0.0.jar \
+  --main-jar torus-election-gui-1.0.3.jar \
   --main-class Main \
   --icon assets/icons/torus-election-gui.png \
   --dest target/installer \
@@ -77,7 +77,7 @@ jpackage \
 </code></pre>
 <p>Install the generated package:</p>
 <pre><code class="language-bash">
-sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+sudo apt install ./target/installer/torus-election-gui_1.0.3-1_amd64.deb
 </code></pre>
 <p>Run the installed app from the desktop menu or from the terminal:</p>
 <pre><code class="language-bash">
@@ -141,9 +141,9 @@ mkdir target\installer
 jpackage `
   --type exe `
   --name TorusElectionGUI `
-  --app-version 1.0.0 `
+  --app-version 1.0.3 `
   --input target `
-  --main-jar torus-election-gui-1.0.0.jar `
+  --main-jar torus-election-gui-1.0.3.jar `
   --main-class Main `
   --icon assets\icons\torus-election-gui.ico `
   --dest target\installer `

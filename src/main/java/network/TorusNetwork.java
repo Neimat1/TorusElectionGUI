@@ -6,8 +6,10 @@ import model.ProcessNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TorusNetwork {
     private final int rows;
@@ -63,7 +65,7 @@ public class TorusNetwork {
     public int getCols() { return cols; }
 
     private List<ProcessNode> resolveNeighbors(ProcessNode node) {
-        List<ProcessNode> neighbors = new ArrayList<>();
+        Set<ProcessNode> neighbors = new LinkedHashSet<>();
         int r = node.getPosition().getRow();
         int c = node.getPosition().getCol();
 
@@ -72,6 +74,6 @@ public class TorusNetwork {
         neighbors.add(nodes[(r + 1) % rows][c]);
         neighbors.add(nodes[(r - 1 + rows) % rows][c]);
 
-        return neighbors;
+        return new ArrayList<>(neighbors);
     }
 }

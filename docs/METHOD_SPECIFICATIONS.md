@@ -35,7 +35,7 @@ Source: `src/main/java/algorithm/TorusElectionAlgorithm.java`
 - Parameters: None.
 - Returns: Nothing.
 - Side effects: Clears previous animation/log data, resets round and message counters, resets node election state, updates each node's `maxKnownId`, records `AnimationStep` entries, records execution log lines, and marks the elected leader node.
-- Algorithm: Repeatedly lets every process receive each neighbor's `maxKnownId`; when no process updates during a round, the election stops.
+- Algorithm: Repeatedly lets every process read each unique neighbor's `maxKnownId`; when no process updates during a round, the election stops.
 - Errors: Relies on the network being valid. It does not validate duplicate IDs; the GUI validates that before creating the network.
 
 ### `findMaximumId()`
@@ -51,7 +51,7 @@ Source: `src/main/java/algorithm/TorusElectionAlgorithm.java`
 
 - `getAnimationSteps()`: returns an unmodifiable view of the recorded animation steps.
 - `getExecutionLog()`: returns an unmodifiable view of the execution log.
-- `getRounds()`: returns the number of completed rounds.
+- `getRounds()`: returns the number of checked rounds, including the final no-change convergence-check round.
 - `getMessages()`: returns the number of message exchanges.
 
 ## `network.TorusNetwork`
@@ -96,9 +96,9 @@ Source: `src/main/java/network/TorusNetwork.java`
 ### `getNeighbors(ProcessNode node)`
 
 - Visibility: `public`
-- Purpose: Returns the four torus neighbors of a process.
+- Purpose: Returns the unique torus neighbors of a process.
 - Parameters: `node` is the process whose neighbors should be resolved.
-- Returns: An unmodifiable cached list ordered as right, left, down, up.
+- Returns: An unmodifiable cached list ordered as right, left, down, up with duplicate wrapped neighbors removed.
 - Side effects: None.
 - Errors: Throws `IllegalArgumentException` when the node does not belong to this network.
 - Torus rule: Uses modular arithmetic so the first and last rows/columns wrap around.
@@ -229,7 +229,16 @@ Source: `src/main/java/logging/AppLog.java`
 - Purpose: Appends text to the persistent application log file.
 - Parameters: `text` is the exact text to append.
 - Returns: Nothing.
-- Side effects: Creates the log directory if needed and writes to `torus-election-gui.log`.
+- Side effects: Lazily resolves the default log directory, creates it if needed, and writes to `torus-election-gui.log`.
+- Errors: Catches `IOException` and writes the failure message to standard error.
+
+### `append(Path logDirectory, String text)`
+
+- Visibility: package-private static synchronized
+- Purpose: Appends text to a caller-provided log directory, primarily for deterministic tests.
+- Parameters: `logDirectory` is the directory that should contain `torus-election-gui.log`; `text` is the exact text to append.
+- Returns: Nothing.
+- Side effects: Creates the provided log directory if needed and writes to `torus-election-gui.log`.
 - Errors: Catches `IOException` and writes the failure message to standard error.
 
 ### `getLogDirectory()`
@@ -238,7 +247,7 @@ Source: `src/main/java/logging/AppLog.java`
 - Purpose: Exposes the resolved persistent log directory.
 - Parameters: None.
 - Returns: The `Path` to the log directory.
-- Side effects: None.
+- Side effects: Lazily resolves and caches the directory on first use.
 
 ### `getLogFile()`
 
@@ -246,7 +255,7 @@ Source: `src/main/java/logging/AppLog.java`
 - Purpose: Exposes the resolved persistent log file path.
 - Parameters: None.
 - Returns: The `Path` to `torus-election-gui.log`.
-- Side effects: None.
+- Side effects: Lazily resolves and caches the directory and file path on first use.
 
 ### `resolveLogDirectory()`
 
@@ -589,7 +598,7 @@ Source: `src/main/java/gui/TorusGridPanel.java`
 ### `drawAnimatedMessage(Graphics2D g2, Layout layout)`
 
 - Visibility: `private`
-- Purpose: Draws the active transmitted value between sender and receiver.
+- Purpose: Draws the active read value between the source neighbor and receiver.
 - Parameters: `g2` is the graphics context, and `layout` supplies node positions.
 - Returns: Nothing.
 - Side effects: Paints a red message marker when `activeStep` is non-null.

@@ -46,7 +46,7 @@
 <li>Parameters: None.</li>
 <li>Returns: Nothing.</li>
 <li>Side effects: Clears previous animation/log data, resets round and message counters, resets node election state, updates each node's <code>maxKnownId</code>, records <code>AnimationStep</code> entries, records execution log lines, and marks the elected leader node.</li>
-<li>Algorithm: Repeatedly lets every process receive each neighbor's <code>maxKnownId</code>; when no process updates during a round, the election stops.</li>
+<li>Algorithm: Repeatedly lets every process read each unique neighbor's <code>maxKnownId</code>; when no process updates during a round, the election stops.</li>
 <li>Errors: Relies on the network being valid. It does not validate duplicate IDs; the GUI validates that before creating the network.</li>
 </ul>
 <h3 id="findmaximumid"><code>findMaximumId()</code></h3>
@@ -62,7 +62,7 @@
 <ul>
 <li><code>getAnimationSteps()</code>: returns an unmodifiable view of the recorded animation steps.</li>
 <li><code>getExecutionLog()</code>: returns an unmodifiable view of the execution log.</li>
-<li><code>getRounds()</code>: returns the number of completed rounds.</li>
+<li><code>getRounds()</code>: returns the number of checked rounds, including the final no-change convergence-check round.</li>
 <li><code>getMessages()</code>: returns the number of message exchanges.</li>
 </ul>
 <h2 id="network-torusnetwork"><code>network.TorusNetwork</code></h2>
@@ -105,9 +105,9 @@
 <h3 id="getneighbors-processnode-node"><code>getNeighbors(ProcessNode node)</code></h3>
 <ul>
 <li>Visibility: <code>public</code></li>
-<li>Purpose: Returns the four torus neighbors of a process.</li>
+<li>Purpose: Returns the unique torus neighbors of a process.</li>
 <li>Parameters: <code>node</code> is the process whose neighbors should be resolved.</li>
-<li>Returns: An unmodifiable cached list ordered as right, left, down, up.</li>
+<li>Returns: An unmodifiable cached list ordered as right, left, down, up with duplicate wrapped neighbors removed.</li>
 <li>Side effects: None.</li>
 <li>Errors: Throws <code>IllegalArgumentException</code> when the node does not belong to this network.</li>
 <li>Torus rule: Uses modular arithmetic so the first and last rows/columns wrap around.</li>
@@ -225,7 +225,16 @@ AnimationStep(
 <li>Purpose: Appends text to the persistent application log file.</li>
 <li>Parameters: <code>text</code> is the exact text to append.</li>
 <li>Returns: Nothing.</li>
-<li>Side effects: Creates the log directory if needed and writes to <code>torus-election-gui.log</code>.</li>
+<li>Side effects: Lazily resolves the default log directory, creates it if needed, and writes to <code>torus-election-gui.log</code>.</li>
+<li>Errors: Catches <code>IOException</code> and writes the failure message to standard error.</li>
+</ul>
+<h3 id="append-path-logdirectory-string-text"><code>append(Path logDirectory, String text)</code></h3>
+<ul>
+<li>Visibility: package-private static synchronized</li>
+<li>Purpose: Appends text to a caller-provided log directory, primarily for deterministic tests.</li>
+<li>Parameters: <code>logDirectory</code> is the directory that should contain <code>torus-election-gui.log</code>; <code>text</code> is the exact text to append.</li>
+<li>Returns: Nothing.</li>
+<li>Side effects: Creates the provided log directory if needed and writes to <code>torus-election-gui.log</code>.</li>
 <li>Errors: Catches <code>IOException</code> and writes the failure message to standard error.</li>
 </ul>
 <h3 id="getlogdirectory"><code>getLogDirectory()</code></h3>
@@ -234,7 +243,7 @@ AnimationStep(
 <li>Purpose: Exposes the resolved persistent log directory.</li>
 <li>Parameters: None.</li>
 <li>Returns: The <code>Path</code> to the log directory.</li>
-<li>Side effects: None.</li>
+<li>Side effects: Lazily resolves and caches the directory on first use.</li>
 </ul>
 <h3 id="getlogfile"><code>getLogFile()</code></h3>
 <ul>
@@ -242,7 +251,7 @@ AnimationStep(
 <li>Purpose: Exposes the resolved persistent log file path.</li>
 <li>Parameters: None.</li>
 <li>Returns: The <code>Path</code> to <code>torus-election-gui.log</code>.</li>
-<li>Side effects: None.</li>
+<li>Side effects: Lazily resolves and caches the directory and file path on first use.</li>
 </ul>
 <h3 id="resolvelogdirectory"><code>resolveLogDirectory()</code></h3>
 <ul>
@@ -581,7 +590,7 @@ AnimationStep(
 <h3 id="drawanimatedmessage-graphics2d-g2-layout-layout"><code>drawAnimatedMessage(Graphics2D g2, Layout layout)</code></h3>
 <ul>
 <li>Visibility: <code>private</code></li>
-<li>Purpose: Draws the active transmitted value between sender and receiver.</li>
+<li>Purpose: Draws the active read value between the source neighbor and receiver.</li>
 <li>Parameters: <code>g2</code> is the graphics context, and <code>layout</code> supplies node positions.</li>
 <li>Returns: Nothing.</li>
 <li>Side effects: Paints a red message marker when <code>activeStep</code> is non-null.</li>

@@ -40,7 +40,7 @@ The output will be a `.snap` file in the repository root.
 For a locally built strict snap:
 
 ```bash
-sudo snap install ./torus-election-gui_1.0.0_amd64.snap --dangerous
+sudo snap install ./torus-election-gui_1.0.3_amd64.snap --dangerous
 ```
 
 Run it:
@@ -83,23 +83,13 @@ So the app log is written inside the snap user data area:
 
 ## License
 
-The current `snapcraft.yaml` uses:
-
-```yaml
-license: Proprietary
-```
-
-This is deliberate because the repository does not currently include an open-source `LICENSE` file. If you want the app to be open source, add a real `LICENSE` file and change the snap metadata to an SPDX license expression such as:
+The snap is published under the same open-source license as the repository:
 
 ```yaml
 license: MIT
 ```
 
-or:
-
-```yaml
-license: Apache-2.0
-```
+The root `LICENSE` file contains the MIT License text so GitHub and Snapcraft can both identify the license correctly.
 
 ## Links
 
@@ -135,7 +125,7 @@ snapcraft register torus-election-gui
 Upload the built snap:
 
 ```bash
-snapcraft upload torus-election-gui_1.0.0_amd64.snap --release=edge
+snapcraft upload torus-election-gui_1.0.3_amd64.snap --release=edge
 ```
 
 Promote to stable after testing:
