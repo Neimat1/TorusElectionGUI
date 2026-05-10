@@ -131,7 +131,7 @@
                                     <span>Status:</span><strong>Completed</strong>
                                     <span>Leader ID:</span><strong>55</strong>
                                     <span>Leader Position:</span><strong>(2,2)</strong>
-                                    <span>Rounds:</span><strong>4</strong>
+                                    <span>Rounds Checked:</span><strong>4</strong>
                                     <span>Messages Exchanged:</span><strong>256</strong>
                                     <span>Start Time:</span><strong>10:24:12</strong>
                                     <span>End Time:</span><strong>10:24:18</strong>
@@ -155,15 +155,15 @@
                             <h3>Execution Log</h3>
                             <div class="prototype-log">
                                 [10:24:12] New animated election run.<br>
-                                [Round 1] P33 -&gt; P8 sends max=33 UPDATED<br>
-                                [Round 2] P55 -&gt; P31 sends max=55 UPDATED<br>
+                                [Round 1] P8 reads max=33 from P33 UPDATED<br>
+                                [Round 2] P31 reads max=55 from P55 UPDATED<br>
                                 [10:24:18] Animation completed successfully.
                             </div>
                         </div>
                     </div>
                 </div>
                 <p class="note">
-                    The red arrow marker represents one animation phase: the highlighted sender passes its current maximum-known ID to the highlighted receiver.
+                    The red arrow marker represents one animation phase: the highlighted receiver reads the highlighted neighbor's current maximum-known ID.
                 </p>
             </section>
 

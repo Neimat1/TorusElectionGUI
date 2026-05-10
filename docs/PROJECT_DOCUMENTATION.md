@@ -2,7 +2,7 @@
 
 ## Overview
 
-Torus Network Leader Election GUI is a Java Swing application that demonstrates leader election on a two-dimensional torus topology. It models each process as a grid node, connects every node to four neighbors with wrap-around edges, and elects the process with the largest ID as leader by propagating maximum known IDs through the network.
+Torus Network Leader Election GUI is a Java Swing application that demonstrates leader election on a two-dimensional torus topology. It models each process as a grid node, connects every node to its unique wrap-around neighbors, and elects the process with the largest ID as leader by propagating maximum known IDs through the network.
 
 The application is intended for interactive demonstration: users can configure the network, run the election immediately, or animate each message exchange.
 
@@ -75,7 +75,7 @@ Responsibilities:
 - Draws dashed wrap-around links to show torus behavior.
 - Draws process nodes with ID and `maxKnownId`.
 - Highlights sender, receiver, and leader states.
-- Draws animated transmitted values between sender and receiver.
+- Draws animated read values between the source neighbor and receiver.
 - Reserves a footer band for wrap-around notes so text remains readable.
 
 Visual state colors:
@@ -107,11 +107,12 @@ Responsibilities:
 - Validates that ID count matches the grid size.
 - Creates a two-dimensional `ProcessNode` array.
 - Returns all nodes in row-major order.
-- Returns four neighbors for any node using modular arithmetic:
+- Returns unique neighbors for any node using modular arithmetic, preserving this directional order:
   - right: `(c + 1) % cols`
   - left: `(c - 1 + cols) % cols`
   - down: `(r + 1) % rows`
   - up: `(r - 1 + rows) % rows`
+- Removes duplicate wrapped neighbors on small grids such as `2 x 2`.
 
 ### `algorithm.TorusElectionAlgorithm`
 
@@ -145,7 +146,7 @@ Immutable row/column value object. It implements `equals`, `hashCode`, and `toSt
 
 ### `model.AnimationStep`
 
-Immutable record-like object describing one transmitted message.
+Immutable record-like object describing one recorded neighbor read. The field names use sender/receiver terminology for animation direction, but the algorithm is pull-based: the current process reads the neighbor's `maxKnownId`.
 
 Fields:
 
@@ -163,11 +164,11 @@ Fields:
 2. `TorusElectionGUI` validates and parses input.
 3. `TorusNetwork` creates the process grid.
 4. `TorusElectionAlgorithm.electLeader()` starts with every process knowing only its own ID.
-5. For each round, every process checks each of its four neighbors.
-6. The neighbor's `maxKnownId` is transmitted to the current process.
+5. For each round, every process checks each of its unique torus neighbors.
+6. The current process reads the neighbor's `maxKnownId`.
 7. If the transmitted value is larger, the current process updates its own `maxKnownId`.
 8. Each transmission is saved as an `AnimationStep`.
-9. Rounds continue until no process updates.
+9. Rounds continue until no process updates. The final no-change pass is counted as a checked round.
 10. The process with the maximum original ID is marked as leader.
 11. The GUI displays final status, logs, and optionally replays the recorded steps.
 
@@ -179,7 +180,7 @@ The animation thread iterates over the recorded `AnimationStep` list:
 
 1. Apply the transmitted value to the receiver in the display network when the step updated that receiver.
 2. Set the active step on `TorusGridPanel`.
-3. Append a log line describing the message.
+3. Append a log line in pull-model form, such as `P12 reads max=5 from P5`.
 4. Sleep for 1000 milliseconds.
 5. Continue until all steps are shown.
 6. Clear the active highlight, mark the leader on the display network, and display the final election summary.
@@ -187,9 +188,9 @@ The animation thread iterates over the recorded `AnimationStep` list:
 Animation phase meaning:
 
 - One animation phase represents one recorded `AnimationStep`.
-- The highlighted sender is the neighbor currently transmitting a value.
-- The highlighted receiver is the process currently receiving that value.
-- The red message marker/arrow carries the sender's current `maxKnownId`.
+- The highlighted sender is the neighbor whose value is being read.
+- The highlighted receiver is the process currently reading that value.
+- The red message marker/arrow carries the neighbor's current `maxKnownId`.
 - If the received value is larger than the receiver's current `maxKnownId`, the receiver updates and is shown with the stronger receiver color.
 
 ## Testing
@@ -205,7 +206,8 @@ Current tests cover:
 - `Position`, `ProcessNode`, and `AnimationStep` model behavior.
 - `TorusNetwork` construction, validation, unmodifiable views, and wrap-around neighbors.
 - `TorusElectionAlgorithm` convergence, leader selection, message counts, reset behavior, logs, and animation-step data.
-- `AppLog` append behavior against a temporary user home.
+- `AppLog` append behavior against an explicit temporary log directory.
+- `TorusElectionGUI` status label wording for checked rounds.
 - `TorusGridPanel` painting in headless mode for empty, network, active-step, and cleared animation states.
 
 JaCoCo writes the HTML coverage report to `target/site/jacoco/index.html`.

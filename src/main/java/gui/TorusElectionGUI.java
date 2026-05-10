@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TorusElectionGUI extends JFrame {
+    static final String ROUNDS_LABEL_TEXT = "Rounds Checked:";
     private static final int ANIMATION_STEP_DELAY_MS = 1000;
     private static final Color SURFACE = Color.WHITE;
     private static final Color PAGE_BACKGROUND = new Color(245, 248, 252);
@@ -220,7 +221,7 @@ public class TorusElectionGUI extends JFrame {
         gridPanel.add(new JLabel("Status:")); gridPanel.add(statusValue);
         gridPanel.add(new JLabel("Leader ID:")); gridPanel.add(leaderIdValue);
         gridPanel.add(new JLabel("Leader Position:")); gridPanel.add(leaderPositionValue);
-        gridPanel.add(new JLabel("Rounds:")); gridPanel.add(roundsValue);
+        gridPanel.add(new JLabel(ROUNDS_LABEL_TEXT)); gridPanel.add(roundsValue);
         gridPanel.add(new JLabel("Messages Exchanged:")); gridPanel.add(messagesValue);
         gridPanel.add(new JLabel("Start Time:")); gridPanel.add(startTimeValue);
         gridPanel.add(new JLabel("End Time:")); gridPanel.add(endTimeValue);
@@ -500,9 +501,9 @@ public class TorusElectionGUI extends JFrame {
                             currentNetwork.getNode(step.getReceiverPosition()).updateMaxKnownId(step.getTransmittedValue());
                         }
                         gridPanel.setActiveStep(step);
-                        appendLog("[Round " + step.getRound() + "] P" + step.getSenderId()
-                                + " -> P" + step.getReceiverId()
-                                + " sends max=" + step.getTransmittedValue()
+                        appendLog("[Round " + step.getRound() + "] P" + step.getReceiverId()
+                                + " reads max=" + step.getTransmittedValue()
+                                + " from P" + step.getSenderId()
                                 + (step.isUpdated() ? "  UPDATED\n" : "\n"));
                         logArea.setCaretPosition(logArea.getDocument().getLength());
                     });

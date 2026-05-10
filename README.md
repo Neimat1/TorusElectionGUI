@@ -81,7 +81,7 @@ GitHub Pages will serve the site from the `docs` folder.
 1. Choose the number of rows and columns. Both values must be at least `2`.
 2. Enter one unique process ID for every grid cell.
 3. Click `Run Election` to execute the algorithm and display the final leader.
-4. Click `Auto Animate` to replay the election messages with sender and receiver highlighting.
+4. Click `Auto Animate` to replay the election reads with source-neighbor and receiver highlighting.
 5. Click `Reset` to clear the visualization, stop any running animation, and return the UI to its initial state.
 
 ## Logs
@@ -184,16 +184,16 @@ TorusGridPanel renders final state or replays steps on a fresh display network
 
 ## Algorithm Summary
 
-Each process starts with its own ID as `maxKnownId`. During each round, every process receives the `maxKnownId` values known by its four torus neighbors: right, left, down, and up. If a received value is larger than the process's current `maxKnownId`, the process updates its value.
+Each process starts with its own ID as `maxKnownId`. During each round, every process reads the `maxKnownId` values known by its unique torus neighbors, resolved in right, left, down, up order with wrap-around duplicates removed on small grids. If a received value is larger than the process's current `maxKnownId`, the process updates its value.
 
-Rounds continue until a complete pass finishes with no changes. At that point the maximum process ID has propagated through the network, and the process with that ID is marked as leader.
+Rounds continue until a complete pass finishes with no changes. The status panel shows this as `Rounds Checked`, so the final no-change convergence-check pass is included in the count. At that point the maximum process ID has propagated through the network, and the process with that ID is marked as leader.
 
 The algorithm records:
 
-- total rounds
+- total rounds checked
 - total messages exchanged
 - a textual execution log
-- animation steps containing sender, receiver, transmitted value, round number, and whether the receiver updated
+- animation steps containing source neighbor, receiving process, transmitted value, round number, and whether the receiver updated
 
 Animated runs execute the algorithm on a simulation network first, then replay the recorded steps onto a fresh display network. This keeps each visible `max=` label aligned with the current animation step instead of showing the final maximum before replay begins.
 
@@ -205,7 +205,7 @@ Run the unit tests and generate the JaCoCo coverage report:
 mvn test
 ```
 
-The suite covers the model objects, torus topology validation and neighbor wrapping, election convergence and animation-step recording, persistent logging, and a headless rendering smoke test for `TorusGridPanel`. The generated coverage report is written to:
+The suite covers the model objects, torus topology validation and neighbor wrapping, election convergence and animation-step recording, persistent logging, GUI status label wording, and a headless rendering smoke test for `TorusGridPanel`. The generated coverage report is written to:
 
 ```text
 target/site/jacoco/index.html
@@ -216,7 +216,7 @@ target/site/jacoco/index.html
 - Network configuration panel: row, column, and total process count.
 - Process ID panel: row-wise ID input.
 - Visualization panel: torus graph, process state, animated messages, wrap-around footer.
-- Election status panel: leader ID, leader position, rounds, messages, start time, and end time.
+- Election status panel: leader ID, leader position, rounds checked, messages, start time, and end time.
 - Legend panel: color meaning for process, sender, receiver, and leader.
 - Controls panel: run, animate, and reset actions.
 - Execution log panel: detailed round and summary output.

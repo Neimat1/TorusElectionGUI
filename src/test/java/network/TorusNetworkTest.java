@@ -60,6 +60,18 @@ class TorusNetworkTest {
     }
 
     @Test
+    void deduplicatesOverlappingWraparoundNeighbors() {
+        TorusNetwork network = new TorusNetwork(2, 2, new int[]{1, 2, 3, 4});
+
+        List<ProcessNode> neighbors = network.getNeighbors(network.getNode(0, 0));
+
+        assertEquals(List.of(
+                network.getNode(0, 1),
+                network.getNode(1, 0)
+        ), neighbors);
+    }
+
+    @Test
     void neighborViewIsCachedAndUnmodifiable() {
         TorusNetwork network = new TorusNetwork(2, 2, new int[]{1, 2, 3, 4});
         ProcessNode node = network.getNode(0, 0);
