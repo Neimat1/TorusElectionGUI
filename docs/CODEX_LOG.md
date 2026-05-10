@@ -15,6 +15,7 @@ This page records the documentation and repository setup work completed with Cod
 - Re-evaluated the project for performance, SOLID, and memory behavior.
 - Applied low-risk optimizations for GUI constants, time formatting, logging directory creation, and algorithm node-list reuse.
 - Updated the performance/SOLID/memory documentation with the current status, tradeoffs, and verification result.
+- Added a versioned stylesheet URL on the GitHub Pages home page to avoid stale cached CSS breaking the prototype preview.
 
 ## Scope
 
