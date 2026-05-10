@@ -266,7 +266,7 @@ mvn package
 Run generated jar:
 
 ```bash
-java -jar target/torus-election-gui-1.0.0.jar
+java -jar target/torus-election-gui-1.0.3.jar
 ```
 
 For first-time setup, IDE notes, and troubleshooting, see [RUNNING.md](RUNNING.md).

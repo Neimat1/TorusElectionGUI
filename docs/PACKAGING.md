@@ -21,7 +21,7 @@ mvn package
 The jar should be created at:
 
 ```text
-target/torus-election-gui-1.0.0.jar
+target/torus-election-gui-1.0.3.jar
 ```
 
 ## Ubuntu `.deb` Installer With Maven
@@ -41,7 +41,7 @@ target/installer/
 Install the generated package:
 
 ```bash
-sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+sudo apt install ./target/installer/torus-election-gui_1.0.3-1_amd64.deb
 ```
 
 The profile runs the same `jpackage` settings that are shown below, but keeps them in `pom.xml`.
@@ -69,9 +69,9 @@ mkdir -p target/installer
 jpackage \
   --type deb \
   --name torus-election-gui \
-  --app-version 1.0.0 \
+  --app-version 1.0.3 \
   --input target \
-  --main-jar torus-election-gui-1.0.0.jar \
+  --main-jar torus-election-gui-1.0.3.jar \
   --main-class Main \
   --icon assets/icons/torus-election-gui.png \
   --dest target/installer \
@@ -84,7 +84,7 @@ jpackage \
 Install the generated package:
 
 ```bash
-sudo apt install ./target/installer/torus-election-gui_1.0.0-1_amd64.deb
+sudo apt install ./target/installer/torus-election-gui_1.0.3-1_amd64.deb
 ```
 
 Run the installed app from the desktop menu or from the terminal:
@@ -175,9 +175,9 @@ mkdir target\installer
 jpackage `
   --type exe `
   --name TorusElectionGUI `
-  --app-version 1.0.0 `
+  --app-version 1.0.3 `
   --input target `
-  --main-jar torus-election-gui-1.0.0.jar `
+  --main-jar torus-election-gui-1.0.3.jar `
   --main-class Main `
   --icon assets\icons\torus-election-gui.ico `
   --dest target\installer `
