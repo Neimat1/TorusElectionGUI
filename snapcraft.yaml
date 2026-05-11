@@ -1,11 +1,15 @@
 name: torus-election-gui
-title: Torus Election GUI
-version: "1.0.3"
-summary: Visualize leader election in a two-dimensional torus network.
+title: Torus Leader Visualizer
+version: "1.0.5"
+summary: Visualize distributed coordination on a torus network.
 description: |
-  Torus Election GUI is a Java Swing desktop application for visualizing
-  leader election in a two-dimensional torus network. It supports immediate
-  execution and animated message propagation.
+  Torus Leader Visualizer is an educational Java Swing desktop application
+  for simulating distributed coordination on a two-dimensional torus network.
+
+  It runs locally, lets users configure process IDs in a grid, and shows how
+  messages propagate until all processes identify the maximum-ID process as
+  the leader. The application does not collect user data or connect to remote
+  services.
 
 base: core24
 grade: stable
@@ -45,8 +49,11 @@ parts:
     stage-packages:
       - openjdk-17-jre
     override-build: |
+      export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-${CRAFT_ARCH_BUILD_FOR}"
+      export PATH="$JAVA_HOME/bin:$PATH"
       mvn -DskipTests package
-      mkdir -p "$CRAFT_PART_INSTALL/jar" "$CRAFT_PART_INSTALL/bin"
+      mkdir -p "$CRAFT_PART_INSTALL/jar" "$CRAFT_PART_INSTALL/bin" "$CRAFT_PART_INSTALL/snap/gui"
       cp "target/torus-election-gui-${CRAFT_PROJECT_VERSION}.jar" "$CRAFT_PART_INSTALL/jar/app.jar"
       cp snap/local/torus-election-gui "$CRAFT_PART_INSTALL/bin/"
+      cp snap/gui/torus-election-gui.desktop "$CRAFT_PART_INSTALL/snap/gui/"
       chmod 755 "$CRAFT_PART_INSTALL/bin/torus-election-gui"
