@@ -2,6 +2,8 @@
 
 A Java Swing desktop application for visualizing leader election in a two-dimensional torus network. The application lets you configure a grid of processes, enter unique process IDs, run the election immediately, or animate message propagation step by step.
 
+![Torus Election GUI showing a completed torus network leader run](docs/assets/torus-election-gui-screenshot.png)
+
 ## Educational Purpose
 
 This project was developed for **SE616 - Software Engineering for Distributed Systems**. It is intended as an educational visualization of leader election behavior in a two-dimensional torus network.
