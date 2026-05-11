@@ -138,8 +138,10 @@ a:hover {
 }
 
 .visual img {
-    width: min(240px, 70vw);
+    width: min(520px, 100%);
     height: auto;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
     filter: drop-shadow(0 22px 36px rgba(0, 0, 0, 0.24));
 }
 
