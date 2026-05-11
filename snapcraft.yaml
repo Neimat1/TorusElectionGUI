@@ -1,30 +1,41 @@
 name: torus-election-gui
 title: Torus Leader Visualizer
-version: "1.0.5"
-summary: Visualize distributed coordination on a torus network.
+version: "1.0.6"
+
+summary: Educational torus grid leader election simulator.
+
 description: |
   Torus Leader Visualizer is an educational Java Swing desktop application
-  for simulating distributed coordination on a two-dimensional torus network.
+  for demonstrating a leader election algorithm on a two-dimensional torus grid.
 
-  It runs locally, lets users configure process IDs in a grid, and shows how
-  messages propagate until all processes identify the maximum-ID process as
-  the leader. The application does not collect user data or connect to remote
-  services.
+  The application allows users to configure process IDs, run the simulation,
+  and visualize how the highest process ID propagates through the grid until
+  a leader is selected.
+
+  This project was developed for learning and demonstrating distributed
+  systems concepts in SE616 - Software Engineering for Distributed Systems.
+
+  The application runs entirely locally and does not collect user data,
+  require authentication, or connect to remote services.
 
 base: core24
 grade: stable
 confinement: strict
 license: MIT
+
 icon: assets/icons/torus-election-gui.png
 
 website:
   - https://neimat1.github.io/TorusElectionGUI/
+
 source-code:
   - https://github.com/neimat1/TorusElectionGUI
+
 issues:
   - https://github.com/neimat1/TorusElectionGUI/issues
+
 contact:
-  - neimat.soliman.ismail@gmail.com
+  - mailto:neimat.soliman.ismail@gmail.com
 
 apps:
   torus-election-gui:
@@ -35,7 +46,7 @@ apps:
       - desktop-legacy
       - wayland
       - x11
-      - home
+
     environment:
       XDG_DATA_HOME: "$SNAP_USER_DATA/.local/share"
 
@@ -43,17 +54,32 @@ parts:
   torus-election-gui:
     plugin: nil
     source: .
+
     build-packages:
       - maven
       - openjdk-17-jdk-headless
+
     stage-packages:
       - openjdk-17-jre
+
     override-build: |
       export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-${CRAFT_ARCH_BUILD_FOR}"
       export PATH="$JAVA_HOME/bin:$PATH"
+
       mvn -DskipTests package
-      mkdir -p "$CRAFT_PART_INSTALL/jar" "$CRAFT_PART_INSTALL/bin" "$CRAFT_PART_INSTALL/snap/gui"
-      cp "target/torus-election-gui-${CRAFT_PROJECT_VERSION}.jar" "$CRAFT_PART_INSTALL/jar/app.jar"
-      cp snap/local/torus-election-gui "$CRAFT_PART_INSTALL/bin/"
-      cp snap/gui/torus-election-gui.desktop "$CRAFT_PART_INSTALL/snap/gui/"
+
+      mkdir -p \
+        "$CRAFT_PART_INSTALL/jar" \
+        "$CRAFT_PART_INSTALL/bin" \
+        "$CRAFT_PART_INSTALL/snap/gui"
+
+      cp "target/torus-election-gui-${CRAFT_PROJECT_VERSION}.jar" \
+         "$CRAFT_PART_INSTALL/jar/app.jar"
+
+      cp snap/local/torus-election-gui \
+         "$CRAFT_PART_INSTALL/bin/"
+
+      cp snap/gui/torus-election-gui.desktop \
+         "$CRAFT_PART_INSTALL/snap/gui/"
+
       chmod 755 "$CRAFT_PART_INSTALL/bin/torus-election-gui"
