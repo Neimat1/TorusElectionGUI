@@ -5,11 +5,11 @@
 
     <groupId>com.toruselection</groupId>
     <artifactId>torus-election-gui</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.6</version>
     <packaging>jar</packaging>
 
-    <name>Torus Election GUI</name>
-    <description>Java Swing visualization for leader election in a two-dimensional torus network.</description>
+    <name>Torus Leader Visualizer</name>
+    <description>Java Swing visualization for distributed coordination in a two-dimensional torus network.</description>
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
