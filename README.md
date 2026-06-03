@@ -96,7 +96,7 @@ GitHub Pages will serve the site from the `docs` folder.
 
 ## Logs
 
-The visible execution log is also appended to a persistent per-user log file:
+The visible execution log displays detailed election status information including nodes updated per round, messages exchanged, and convergence detection. The execution log is also appended to a persistent per-user log file:
 
 ```text
 ~/.local/share/torus-election-gui/logs/torus-election-gui.log
@@ -232,6 +232,10 @@ target/site/jacoco/index.html
 - Execution log panel: detailed round and summary output.
 
 ## Documentation
+
+See [docs/ALGORITHM_ANALYSIS.md](docs/ALGORITHM_ANALYSIS.md) for detailed analysis of the torus network leader election algorithm, including best and worst case complexity, and concrete 4×4 grid examples.
+
+See [docs/ELECTION_STATUS_LOGGING.md](docs/ELECTION_STATUS_LOGGING.md) for details on the enhanced execution log with per-round election status metrics and convergence information.
 
 See [docs/PROJECT_DOCUMENTATION.md](docs/PROJECT_DOCUMENTATION.md) for fuller implementation documentation, including class responsibilities, data flow, rendering behavior, validation rules, and maintenance notes.
 

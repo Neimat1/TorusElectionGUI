@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Election Status Logging - Torus Election GUI</title>
+    <link rel="icon" type="image/png" href="assets/torus-election-gui.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" href="index.html"><img src="assets/torus-election-gui.png" alt=""><span>Torus Election GUI</span></a>
+        <nav class="nav" aria-label="Documentation navigation"><a href="index.html">Home</a><a href="RUNNING.html">Run</a><a href="PACKAGING.html">Package</a><a href="SNAP_PACKAGING.html">Snap</a></nav>
+    </div>
+</header>
+<main class="doc-page"><article class="doc-article">
+<h1 id="election-status-logging-enhancement">Election Status Logging Enhancement</h1>
+<h2 id="summary-of-changes">Summary of Changes</h2>
+<p>The execution log now includes detailed <strong>election status</strong> information for each round and at completion.</p>
+<h2 id="what-was-enhanced">What Was Enhanced</h2>
+<h3 id="1-per-round-status-logging">1. <strong>Per-Round Status Logging</strong></h3>
+<p>Each round now logs:
+- <strong>Number of nodes updated</strong> in that round
+- <strong>Number of messages exchanged</strong> in that round
+- <strong>Convergence status</strong> indicating whether updates occurred</p>
+<h3 id="2-convergence-check-logging">2. <strong>Convergence Check Logging</strong></h3>
+<p>The final verification round explicitly logs:
+- "Round N completed (convergence check). Status: No updates detected - election converged."</p>
+<p>This makes it clear when the algorithm has reached convergence.</p>
+<h3 id="3-final-election-status">3. <strong>Final Election Status</strong></h3>
+<p>The completion message now includes:
+- <strong>Total rounds executed</strong>
+- <strong>Total messages exchanged</strong>
+- <strong>Leader ID and position</strong></p>
+<h2 id="example-log-output">Example Log Output</h2>
+<h3 id="before-old-format">Before (Old Format)</h3>
+<pre><code>[09:28:10 AM] Initialization complete. Total processes: 16
+[09:28:10 AM] Starting leader election.
+[09:28:10 AM] Round 1 completed.
+[09:28:10 AM] Round 2 completed.
+[09:28:10 AM] Round 3 completed.
+[09:28:10 AM] Election completed. Leader is Process ID: 100 at position (0, 0)
+</code></pre>
+<h3 id="after-new-format-with-election-status">After (New Format with Election Status)</h3>
+<pre><code>[09:28:10 AM] Initialization complete. Total processes: 16
+[09:28:10 AM] Starting leader election.
+[09:28:10 AM] Round 1 completed. Status: 4 nodes updated, 64 messages exchanged.
+[09:28:10 AM] Round 2 completed. Status: 11 nodes updated, 64 messages exchanged.
+[09:28:10 AM] Round 3 completed (convergence check). Status: No updates detected - election converged.
+[09:28:10 AM] Election completed. Leader is Process ID: 100 at position (0, 0). Total rounds: 3, Total messages: 192
+</code></pre>
+<h2 id="detailed-metrics-now-available">Detailed Metrics Now Available</h2>
+<h3 id="round-by-round-metrics">Round-by-Round Metrics</h3>
+<ul>
+<li><strong>Updated nodes count</strong>: How many nodes received and updated to a higher <code>maxKnownId</code> in this round</li>
+<li><strong>Messages exchanged</strong>: Total number of individual message transmissions during the round</li>
+<li><strong>Convergence detection</strong>: Clear indication of when no updates occurred (convergence reached)</li>
+</ul>
+<h3 id="final-status-metrics">Final Status Metrics</h3>
+<ul>
+<li><strong>Total rounds</strong>: Complete rounds executed (including final verification)</li>
+<li><strong>Total messages</strong>: Sum of all message exchanges across all rounds</li>
+<li><strong>Leader identification</strong>: Clear final result</li>
+</ul>
+<h2 id="code-changes">Code Changes</h2>
+<p>Modified file: <code>src/main/java/algorithm/TorusElectionAlgorithm.java</code></p>
+<p>Changes:
+1. Added <code>roundMessages</code> counter to track messages per round
+2. Added <code>updatedNodesInRound</code> counter to track node updates per round
+3. Enhanced log message for propagation rounds: includes nodes updated and messages
+4. Added explicit convergence check logging: distinguishes final verification round
+5. Enhanced final election log: includes total rounds and total messages</p>
+<h2 id="compilation-status">Compilation Status</h2>
+<p>✅ <strong>Code compiles successfully</strong> with no errors
+✅ <strong>Build successful</strong> - All 9 source files compiled
+✅ <strong>Ready to test</strong> - Compare log output before and after changes</p>
+<h2 id="testing-the-changes">Testing the Changes</h2>
+<p>To verify the new logging format:</p>
+<ol>
+<li><p>Compile the project:</p>
+<pre><code>mvn compile
+</code></pre>
+</li>
+<li><p>Run the application:</p>
+<pre><code>java -cp target/classes Main
+</code></pre>
+</li>
+<li><p>Run an election and observe the enhanced execution log showing:
+- Nodes updated per round
+- Messages exchanged per round
+- Clear convergence detection
+- Total statistics at completion</p>
+</li>
+</ol>
+</article></main>
+</body>
+</html>
+
