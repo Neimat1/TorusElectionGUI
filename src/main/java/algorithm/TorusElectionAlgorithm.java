@@ -39,10 +39,13 @@ public class TorusElectionAlgorithm {
         while (changed) {
             changed = false;
             rounds++;
+            int roundMessages = 0;
+            int updatedNodesInRound = 0;
 
             for (ProcessNode current : nodes) {
                 for (ProcessNode neighbor : network.getNeighbors(current)) {
                     messages++;
+                    roundMessages++;
 
                     int receivedId = neighbor.getMaxKnownId();
                     boolean updated = receivedId > current.getMaxKnownId();
@@ -59,12 +62,18 @@ public class TorusElectionAlgorithm {
 
                     if (updated) {
                         current.updateMaxKnownId(receivedId);
+                        updatedNodesInRound++;
                         changed = true;
                     }
                 }
             }
 
-            executionLog.add("Round " + rounds + " completed.");
+            if (changed) {
+                executionLog.add("Round " + rounds + " completed. Status: " + updatedNodesInRound
+                        + " nodes updated, " + roundMessages + " messages exchanged.");
+            } else {
+                executionLog.add("Round " + rounds + " completed (convergence check). Status: No updates detected - election converged.");
+            }
         }
 
         int leaderId = findMaximumId(nodes);
@@ -72,7 +81,8 @@ public class TorusElectionAlgorithm {
             if (node.getId() == leaderId) {
                 node.setLeader(true);
                 executionLog.add("Election completed. Leader is Process ID: " + node.getId()
-                        + " at position " + node.getPosition());
+                        + " at position " + node.getPosition() + ". Total rounds: " + rounds
+                        + ", Total messages: " + messages);
             }
         }
     }
