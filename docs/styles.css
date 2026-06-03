@@ -138,8 +138,10 @@ a:hover {
 }
 
 .visual img {
-    width: min(240px, 70vw);
+    width: min(520px, 100%);
     height: auto;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
     filter: drop-shadow(0 22px 36px rgba(0, 0, 0, 0.24));
 }
 
@@ -238,6 +240,34 @@ code {
 .doc-link span {
     color: var(--muted);
     font-size: 14px;
+}
+
+.screenshot-grid {
+    display: grid;
+    gap: 28px;
+}
+
+.screenshot-card {
+    margin: 0;
+    display: grid;
+    gap: 10px;
+}
+
+.screenshot-card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 18px 42px rgba(15, 35, 65, 0.14);
+}
+
+.screenshot-card figcaption {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.45;
 }
 
 .prototype-shell {

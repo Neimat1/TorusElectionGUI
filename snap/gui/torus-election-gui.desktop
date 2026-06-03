@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Torus Election GUI
-Comment=Visualize leader election in a two-dimensional torus network
+Name=Torus Leader Visualizer
+Comment=Visualize distributed coordination in a two-dimensional torus network
 Exec=torus-election-gui
 Icon=${SNAP}/meta/gui/icon.png
 Terminal=false
